@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Wallet GP Coin</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    .wallet-hero {
+      background: linear-gradient(135deg,rgba(240,180,41,0.08) 0%,rgba(240,180,41,0.02) 100%);
+      border: 1px solid rgba(240,180,41,0.2); border-radius: var(--r-xl);
+      padding: 32px; margin-bottom: 28px;
+    }
+    .wallet-balance-label { font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:6px; }
+    .wallet-balance { font-family:var(--display);font-size:52px;font-weight:800;color:var(--gold);line-height:1; }
+    .wallet-usd { font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:8px; }
+    .wallet-metrics { display:flex;gap:0;margin-top:24px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border); }
+    .wm { flex:1;padding:14px 16px;background:rgba(30,30,40,0.5);border-right:1px solid var(--border);text-align:center; }
+    .wm:last-child { border-right:none; }
+    .wm-v { font-family:var(--display);font-size:18px;font-weight:700;color:var(--t1); }
+    .wm-l { font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;text-transform:uppercase;margin-top:3px; }
+
+    /* Paquetes */
+    .paquetes-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:32px; }
+    .paquete-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+      padding:18px; cursor:pointer; transition:all var(--t-normal); text-align:center; position:relative;
+    }
+    .paquete-card:hover { border-color:var(--gold-dim); transform:translateY(-3px); box-shadow:0 8px 24px var(--gold-faint); }
+    .paquete-card.popular { border-color:var(--gold-dim); box-shadow:0 0 20px var(--gold-faint); }
+    .popular-badge { position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 10px;border-radius:var(--pill);letter-spacing:0.08em;white-space:nowrap; }
+    .paquete-gpc { font-family:var(--display);font-size:26px;font-weight:800;color:var(--gold); }
+    .paquete-gpc-label { font-family:var(--mono);font-size:9px;color:var(--gold-dim);letter-spacing:0.1em; }
+    .paquete-bonus { font-family:var(--mono);font-size:10px;color:var(--green);margin-top:4px; }
+    .paquete-precio { font-family:var(--display);font-size:20px;font-weight:700;margin-top:12px; }
+    .paquete-nombre { font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px; }
+
+    /* Métodos de pago */
+    .metodos-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:28px; }
+    .metodo-btn {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
+      padding:12px 8px; cursor:pointer; transition:all var(--t-fast); text-align:center;
+      font-family:var(--ui); font-size:13px; font-weight:600; color:var(--t2);
+    }
+    .metodo-btn:hover { border-color:var(--muted); color:var(--t1); }
+    .metodo-btn.active { border-color:var(--gold); color:var(--gold); background:var(--gold-faint); }
+    .metodo-icon { font-size:22px; display:block; margin-bottom:4px; }
+
+    /* Transacciones */
+    .tx-item { display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border); }
+    .tx-item:last-child { border-bottom:none; }
+    .tx-icon { width:38px;height:38px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+    .tx-info { flex:1;min-width:0; }
+    .tx-tipo { font-family:var(--ui);font-size:13px;font-weight:600; }
+    .tx-fecha { font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px; }
+    .tx-monto { font-family:var(--display);font-size:16px;font-weight:700;text-align:right;white-space:nowrap; }
+    .tx-estado { font-family:var(--mono);font-size:9px;text-align:right;margin-top:2px; }
+
+    /* Modal recarga */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px; }
+    .modal { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px;max-width:440px;width:100%;position:relative;animation:slide-up 0.3s ease; }
+    .modal-title { font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:20px; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-left:8px">/ Wallet</div>
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
+    <a href="perfil.html" class="nav-avatar" id="nav-avatar">GP</a>
+  </div>
+</nav>
+
+<div class="app-shell" style="grid-template-rows:auto">
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <a href="feed.html"    class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Arena</span></a>
+    <a href="perfil.html"  class="sidebar-item"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+    <a href="retos.html"   class="sidebar-item"><span class="sidebar-icon">🏆</span><span class="sidebar-label">Mis Retos</span></a>
+    <a href="wallet.html"  class="sidebar-item active"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+    <div class="sidebar-section">Mercado</div>
+    <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+    <div class="sidebar-section">Ayuda</div>
+    <a href="gamery.html"  class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- Balance hero -->
+    <div class="wallet-hero">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="wallet-balance-label">Tu saldo disponible</div>
+          <div class="wallet-balance" id="saldo-gpc">—</div>
+          <div class="wallet-usd" id="saldo-usd">GPC · ≈ $0.00 USD</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:4px">Bloqueado en retos</div>
+          <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--t2)" id="saldo-bloqueado">— GPC</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:8px">Patrimonio total</div>
+          <div style="font-family:var(--display);font-size:18px;font-weight:700;color:var(--gold)" id="patrimonio">— GPC</div>
+        </div>
+      </div>
+      <div class="wallet-metrics">
+        <div class="wm"><div class="wm-v text-green" id="total-ganado">—</div><div class="wm-l">Ganado</div></div>
+        <div class="wm"><div class="wm-v" id="total-apostado">—</div><div class="wm-l">Apostado</div></div>
+        <div class="wm"><div class="wm-v" id="total-recargado">—</div><div class="wm-l">Recargado</div></div>
+        <div class="wm"><div class="wm-v text-cyan" id="portafolio-acciones">—</div><div class="wm-l">En acciones</div></div>
+      </div>
+    </div>
+
+    <!-- Paquetes GP Coin -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-family:var(--display);font-size:20px;font-weight:700">🪙 Recargar GP Coin</h2>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">1 GPC = $0.10 USD</div>
+    </div>
+
+    <div class="paquetes-grid" id="paquetes-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3)"><div class="loading-spinner" style="margin:0 auto 10px"></div>Cargando paquetes...</div>
+    </div>
+
+    <!-- Método de pago -->
+    <h3 style="font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:14px">Método de pago</h3>
+    <div class="metodos-grid">
+      <button class="metodo-btn active" onclick="selectMetodo('stripe',this)"><span class="metodo-icon">💳</span>Tarjeta</button>
+      <button class="metodo-btn" onclick="selectMetodo('paypal',this)"><span class="metodo-icon">🅿️</span>PayPal</button>
+      <button class="metodo-btn" onclick="selectMetodo('nequi',this)"><span class="metodo-icon">📱</span>Nequi</button>
+      <button class="metodo-btn" onclick="selectMetodo('daviplata',this)"><span class="metodo-icon">🏦</span>Daviplata</button>
+      <button class="metodo-btn" onclick="selectMetodo('mercadopago',this)"><span class="metodo-icon">🛒</span>MercadoPago</button>
+      <button class="metodo-btn" onclick="selectMetodo('pse',this)"><span class="metodo-icon">🏛️</span>PSE</button>
+      <button class="metodo-btn" onclick="selectMetodo('crypto',this)"><span class="metodo-icon">₿</span>Crypto</button>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Historial de transacciones -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-family:var(--display);font-size:20px;font-weight:700">Historial</h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="filterTx('')">Todo</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterTx('recarga_gpc')">Recargas</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterTx('premio_ganado')">Premios</button>
+      </div>
+    </div>
+    <div id="tx-list">
+      <div style="text-align:center;padding:30px;color:var(--t3)"><div class="loading-spinner" style="margin:0 auto 10px"></div>Cargando...</div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal confirmar recarga -->
+<div id="modal-recarga" style="display:none" class="modal-overlay" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <div class="modal-title">Confirmar recarga</div>
+    <div style="background:var(--elevated);border-radius:var(--r-lg);padding:16px;margin-bottom:20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--t3);margin-bottom:4px">Vas a recibir</div>
+      <div style="font-family:var(--display);font-size:36px;font-weight:800;color:var(--gold)" id="modal-gpc">—</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-top:4px" id="modal-bonus"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--t3)">Precio</span>
+      <span style="font-family:var(--display);font-size:18px;font-weight:700" id="modal-precio">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--t3)">Método</span>
+      <span style="font-family:var(--ui);font-size:14px;font-weight:600" id="modal-metodo">—</span>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-full" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="modal-confirm-btn" onclick="confirmarRecarga()">Pagar →</button>
+    </div>
+  </div>
+</div>
+
+<button class="gamery-fab" onclick="window.location.href='gamery.html'">🤖<div class="gamery-fab-pulse"></div></button>
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  let metodoSeleccionado = 'stripe';
+  let paqueteSeleccionado = null;
+  let paquetesData = [];
+
+  const TX_ICONS = {
+    recarga_gpc: { icon:'🪙', bg:'var(--gold-faint)', color:'var(--green)' },
+    premio_ganado:{ icon:'🏆', bg:'rgba(0,230,118,0.08)', color:'var(--green)' },
+    apuesta_bloqueada:{ icon:'🔒', bg:'var(--elevated)', color:'var(--t2)' },
+    apuesta_devuelta: { icon:'↩️', bg:'var(--elevated)', color:'var(--cyan)' },
+    compra_accion:{ icon:'📈', bg:'rgba(179,136,255,0.08)', color:'var(--purple)' },
+    venta_accion: { icon:'📉', bg:'rgba(179,136,255,0.08)', color:'var(--purple)' },
+    bono_bienvenida:{ icon:'🎁', bg:'var(--gold-faint)', color:'var(--gold)' },
+    ticket_espectador:{ icon:'🎫', bg:'var(--elevated)', color:'var(--t2)' },
+    propina_espectador:{ icon:'💝', bg:'rgba(0,230,118,0.08)', color:'var(--green)' },
+  };
+
+  const MOCK_TXS = [
+    { id:'t1', tipo:'bono_bienvenida',  monto_gpc:50,    descripcion:'Bono de bienvenida',    created_at: new Date(Date.now()-86400000*2).toISOString(), estado:'completada' },
+    { id:'t2', tipo:'premio_ganado',    monto_gpc:475,   descripcion:'Premio reto vs ElClasico_MX', created_at: new Date(Date.now()-86400000*3).toISOString(), estado:'completada' },
+    { id:'t3', tipo:'apuesta_bloqueada',monto_gpc:-500,  descripcion:'Reto vs FootballGod_PE', created_at: new Date(Date.now()-86400000*5).toISOString(), estado:'completada' },
+    { id:'t4', tipo:'recarga_gpc',      monto_gpc:1050,  descripcion:'Recarga Player — Stripe', created_at: new Date(Date.now()-86400000*7).toISOString(), estado:'completada' },
+    { id:'t5', tipo:'compra_accion',    monto_gpc:-485,  descripcion:'100 acciones $PRGM',    created_at: new Date(Date.now()-86400000*8).toISOString(), estado:'completada' },
+  ];
+
+  async function loadWallet() {
+    try {
+      const w = await API.wallet.get();
+      document.getElementById('saldo-gpc').textContent          = GPC.format(w.saldo_gpc);
+      document.getElementById('saldo-usd').textContent          = `GPC · ≈ ${GPC.toUSD(w.saldo_gpc)}`;
+      document.getElementById('saldo-bloqueado').textContent    = GPC.format(w.saldo_bloqueado_gpc);
+      document.getElementById('patrimonio').textContent         = GPC.format(w.patrimonio_total_gpc || w.saldo_total_gpc);
+      document.getElementById('total-ganado').textContent       = GPC.format(w.total_ganado_gpc);
+      document.getElementById('total-apostado').textContent     = GPC.format(w.total_apostado_gpc);
+      document.getElementById('total-recargado').textContent    = GPC.format(w.total_recargado_gpc);
+      document.getElementById('portafolio-acciones').textContent= GPC.format(w.portafolio_acciones_gpc || 0);
+      document.getElementById('nav-wallet').innerHTML = `<span class="wallet-dot"></span>${GPC.format(w.saldo_gpc)}`;
+    } catch {
+      document.getElementById('saldo-gpc').textContent = '1.250';
+      document.getElementById('saldo-usd').textContent = 'GPC · ≈ $125.00 USD';
+      document.getElementById('saldo-bloqueado').textContent = '500 GPC';
+      document.getElementById('patrimonio').textContent = '2.235 GPC';
+      document.getElementById('total-ganado').textContent = '42.800';
+      document.getElementById('total-apostado').textContent = '38.000';
+      document.getElementById('total-recargado').textContent = '2.050';
+      document.getElementById('portafolio-acciones').textContent = '485';
+    }
+  }
+
+  async function loadPaquetes() {
+    try {
+      paquetesData = await API.wallet.paquetes();
+    } catch {
+      paquetesData = [
+        { slug:'starter', nombre:'Starter', gpc_base:100,  gpc_bonus:0,   gpc_total:100,  precio_usd:1.00, popular:false },
+        { slug:'basic',   nombre:'Basic',   gpc_base:500,  gpc_bonus:0,   gpc_total:500,  precio_usd:5.00, popular:false },
+        { slug:'player',  nombre:'Player',  gpc_base:1000, gpc_bonus:50,  gpc_total:1050, precio_usd:10.00,popular:true  },
+        { slug:'pro',     nombre:'Pro',     gpc_base:5000, gpc_bonus:500, gpc_total:5500, precio_usd:50.00,popular:false },
+        { slug:'elite',   nombre:'Elite',   gpc_base:10000,gpc_bonus:2000,gpc_total:12000,precio_usd:100.00,popular:false},
+        { slug:'champion',nombre:'Champion',gpc_base:50000,gpc_bonus:15000,gpc_total:65000,precio_usd:500.00,popular:false},
+      ];
+    }
+    renderPaquetes();
+  }
+
+  function renderPaquetes() {
+    document.getElementById('paquetes-grid').innerHTML = paquetesData.map(p => `
+      <div class="paquete-card${p.popular?' popular':''}" onclick="seleccionarPaquete('${p.slug}',this)">
+        ${p.popular ? '<div class="popular-badge">⭐ MÁS POPULAR</div>' : ''}
+        <div class="paquete-nombre">${p.nombre}</div>
+        <div class="paquete-gpc">${p.gpc_total.toLocaleString()}</div>
+        <div class="paquete-gpc-label">GP COIN</div>
+        ${p.gpc_bonus ? `<div class="paquete-bonus">+${p.gpc_bonus.toLocaleString()} GPC bonus 🎁</div>` : '<div style="height:18px"></div>'}
+        <div class="paquete-precio">$${p.precio_usd.toFixed(p.precio_usd < 10 ? 2 : 0)}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">USD</div>
+      </div>`).join('');
+  }
+
+  function seleccionarPaquete(slug, el) {
+    document.querySelectorAll('.paquete-card').forEach(c => c.style.borderColor = '');
+    el.style.borderColor = 'var(--gold)';
+    el.style.boxShadow = '0 0 20px var(--gold-faint)';
+    paqueteSeleccionado = paquetesData.find(p => p.slug === slug);
+    if (paqueteSeleccionado) abrirModal(paqueteSeleccionado);
+  }
+
+  function selectMetodo(metodo, btn) {
+    metodoSeleccionado = metodo;
+    document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function abrirModal(p) {
+    const nombres = { stripe:'💳 Tarjeta', paypal:'🅿️ PayPal', nequi:'📱 Nequi', daviplata:'🏦 Daviplata', mercadopago:'🛒 MercadoPago', pse:'🏛️ PSE', crypto:'₿ Crypto' };
+    document.getElementById('modal-gpc').textContent   = GPC.format(p.gpc_total);
+    document.getElementById('modal-bonus').textContent = p.gpc_bonus ? `Incluye ${p.gpc_bonus.toLocaleString()} GPC de bonus` : '';
+    document.getElementById('modal-precio').textContent = `$${p.precio_usd.toFixed(2)} USD`;
+    document.getElementById('modal-metodo').textContent = nombres[metodoSeleccionado] || metodoSeleccionado;
+    document.getElementById('modal-recarga').style.display = 'flex';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal-recarga').style.display = 'none';
+  }
+
+  async function confirmarRecarga() {
+    if (!paqueteSeleccionado) return;
+    const btn = document.getElementById('modal-confirm-btn');
+    btn.textContent = 'Procesando...'; btn.disabled = true;
+    try {
+      const res = await API.wallet.recargar(paqueteSeleccionado.slug, metodoSeleccionado);
+      cerrarModal();
+      if (res.checkout_url) { window.location.href = res.checkout_url; }
+      else { toast(`Pago iniciado. ${GPC.format(paqueteSeleccionado.gpc_total)} serán acreditados en breve.`, 'success'); loadWallet(); }
+    } catch (e) {
+      toast(e.message || 'Error al procesar pago', 'error');
+      btn.textContent = 'Pagar →'; btn.disabled = false;
+    }
+  }
+
+  async function loadTransacciones(tipo = '') {
+    try {
+      const txs = await API.wallet.transacciones(tipo || undefined);
+      renderTxs(txs);
+    } catch { renderTxs(MOCK_TXS.filter(t => !tipo || t.tipo === tipo)); }
+  }
+
+  function renderTxs(txs) {
+    document.getElementById('tx-list').innerHTML = txs.length ? txs.map(t => {
+      const cfg = TX_ICONS[t.tipo] || { icon:'💰', bg:'var(--elevated)', color:'var(--t1)' };
+      const pos  = t.monto_gpc > 0;
+      return `
+        <div class="tx-item">
+          <div class="tx-icon" style="background:${cfg.bg}">${cfg.icon}</div>
+          <div class="tx-info">
+            <div class="tx-tipo">${t.descripcion || t.tipo.replace(/_/g,' ')}</div>
+            <div class="tx-fecha">${timeAgo(t.created_at)}</div>
+          </div>
+          <div>
+            <div class="tx-monto" style="color:${pos?'var(--green)':'var(--red)'}">${pos?'+':''}${GPC.format(Math.abs(t.monto_gpc))}</div>
+            <div class="tx-estado" style="color:${t.estado==='completada'?'var(--green)':'var(--t3)'}">${t.estado}</div>
+          </div>
+        </div>`;
+    }).join('') : '<div style="text-align:center;padding:30px;color:var(--t3);font-family:var(--mono);font-size:11px">Sin transacciones</div>';
+  }
+
+  function filterTx(tipo) {
+    document.querySelectorAll('.btn-ghost').forEach((b,i) => {
+      b.classList.toggle('active', (i===0&&!tipo)||(i===1&&tipo==='recarga_gpc')||(i===2&&tipo==='premio_ganado'));
+    });
+    loadTransacciones(tipo);
+  }
+
+  // URL params: si viene de pago exitoso
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('recarga') === 'exitosa') { toast('¡GPC acreditados! 🎉', 'success'); }
+
+  loadWallet();
+  loadPaquetes();
+  loadTransacciones();
+  initNavbar();
+</script>
+</body>
+</html>

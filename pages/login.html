@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Ingresa a la arena</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    body { display:grid; grid-template-columns: 1fr 440px; min-height: 100vh; }
+
+    /* ── Hero lado izquierdo ── */
+    .auth-hero {
+      position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #0a0a0f 0%, #111128 50%, #0d1a2e 100%);
+      display: flex; flex-direction: column;
+      justify-content: space-between; padding: 40px 48px;
+    }
+
+    .auth-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(240,180,41,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,180,41,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .auth-hero-orb-1 {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: rgba(240,180,41,0.05); filter: blur(80px);
+      top: -150px; right: -100px; pointer-events: none;
+    }
+
+    .auth-hero-orb-2 {
+      position: absolute; width: 350px; height: 350px; border-radius: 50%;
+      background: rgba(0,229,255,0.03); filter: blur(70px);
+      bottom: -80px; left: -60px; pointer-events: none;
+    }
+
+    .hero-content { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold);
+      border: 1px solid rgba(240,180,41,0.2); border-radius: var(--pill);
+      padding: 4px 14px; margin-bottom: 24px; width: fit-content;
+      background: rgba(240,180,41,0.04);
+    }
+
+    .hero-eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); animation: blink 2s infinite;
+    }
+
+    .hero-title {
+      font-family: var(--display); font-size: clamp(44px, 5vw, 72px);
+      font-weight: 800; line-height: 0.9; letter-spacing: -0.03em; margin-bottom: 20px;
+    }
+
+    .hero-title .gold { background: linear-gradient(135deg, var(--gold), var(--gold-lt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: block; }
+
+    .hero-desc { font-size: 16px; color: var(--t2); line-height: 1.6; max-width: 380px; margin-bottom: 36px; }
+
+    /* Stats */
+    .hero-stats { display: flex; gap: 0; position: relative; z-index: 1; }
+    .hs { padding: 14px 22px; border: 1px solid var(--border); background: rgba(30,30,40,0.6); }
+    .hs:first-child { border-radius: 10px 0 0 10px; }
+    .hs:last-child  { border-radius: 0 10px 10px 0; border-left: none; }
+    .hs:not(:first-child):not(:last-child) { border-left: none; }
+    .hs-v { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--gold); line-height: 1; }
+    .hs-l { font-family: var(--mono); font-size: 9px; color: var(--t3); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 3px; }
+
+    /* Floating cards */
+    .floating-cards {
+      position: absolute; right: 48px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; opacity: 0.65; z-index: 1;
+    }
+
+    .float-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px; width: 200px;
+    }
+
+    .float-card.live { border-color: rgba(0,229,255,0.3); }
+
+    .fc-av {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--display); font-size: 12px; font-weight: 800; flex-shrink: 0;
+    }
+
+    .fc-name { font-family: var(--ui); font-size: 12px; font-weight: 600; }
+    .fc-sub  { font-family: var(--mono); font-size: 9px; color: var(--t3); }
+
+    .fc-badge {
+      margin-left: auto; font-family: var(--mono); font-size: 9px;
+      padding: 2px 8px; border-radius: var(--pill); border: 1px solid; white-space: nowrap;
+    }
+
+    /* ── Panel de auth ── */
+    .auth-panel {
+      background: var(--void);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 48px 36px;
+    }
+
+    .auth-tabs {
+      display: flex; gap: 4px;
+      background: var(--surface); border-radius: 12px; padding: 4px; margin-bottom: 28px;
+    }
+
+    .auth-tab {
+      flex: 1; padding: 9px; border-radius: 8px; border: none; cursor: pointer;
+      font-family: var(--ui); font-size: 13px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      background: transparent; color: var(--t3); transition: all var(--t-fast);
+    }
+
+    .auth-tab.active { background: var(--elevated); color: var(--gold); }
+
+    .auth-title { font-family: var(--display); font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .auth-sub   { font-size: 13px; color: var(--t2); margin-bottom: 24px; }
+
+    .error-msg {
+      background: rgba(255,61,87,0.08); border: 1px solid rgba(255,61,87,0.2);
+      border-radius: var(--r-md); padding: 10px 14px;
+      font-size: 13px; color: var(--red); margin-bottom: 16px; display: none;
+    }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .submit-btn {
+      width: 100%; padding: 13px; border-radius: var(--r-md); border: none; cursor: pointer;
+      font-family: var(--ui); font-size: 14px; font-weight: 800;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: var(--gold); color: var(--black);
+      margin-top: 6px; transition: all var(--t-fast);
+    }
+
+    .submit-btn:hover:not(:disabled) { background: var(--gold-lt); transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .or-divider {
+      display: flex; align-items: center; gap: 12px; margin: 18px 0;
+      font-family: var(--mono); font-size: 10px; color: var(--t3); letter-spacing: 0.1em;
+    }
+
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .social-row { display: flex; gap: 8px; }
+
+    .social-btn {
+      flex: 1; padding: 10px; border-radius: var(--r-md); cursor: pointer;
+      font-family: var(--ui); font-size: 13px; font-weight: 600;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--t1); transition: all var(--t-fast);
+    }
+
+    .social-btn:hover { border-color: var(--muted); background: var(--elevated); }
+
+    .bonus-card {
+      margin-top: 20px;
+      background: var(--gold-faint); border: 1px solid rgba(240,180,41,0.15);
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .bonus-icon {
+      width: 38px; height: 38px; background: var(--gold); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+
+    .bonus-title { font-family: var(--display); font-size: 13px; font-weight: 700; color: var(--gold); }
+    .bonus-sub   { font-family: var(--mono); font-size: 9px; color: var(--t3); margin-top: 2px; }
+
+    /* Ocultar vistas por defecto */
+    #view-register { display: none; }
+
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; }
+      .auth-hero { display: none; }
+      .auth-panel { min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero izquierdo -->
+<div class="auth-hero">
+  <div class="auth-hero-orb-1"></div>
+  <div class="auth-hero-orb-2"></div>
+
+  <a href="/" class="nav-logo" style="position:relative;z-index:1">G<span>P</span></a>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">La arena profesional del gaming</div>
+    <h1 class="hero-title">Reta.<br>Gana.<br><span class="gold">Cotiza.</span></h1>
+    <p class="hero-desc">Retos reales en GP Coin, un árbitro IA que nunca miente y un mercado donde tu skill tiene precio de acción.</p>
+
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-v">12K+</div><div class="hs-l">Jugadores</div></div>
+      <div class="hs"><div class="hs-v">$840K</div><div class="hs-l">Premios</div></div>
+      <div class="hs"><div class="hs-v">98%</div><div class="hs-l">Resol. IA</div></div>
+    </div>
+  </div>
+
+  <!-- Floating cards -->
+  <div class="floating-cards">
+    <div class="float-card live">
+      <div class="fc-av" style="background:linear-gradient(135deg,#00e5ff,#0096aa);color:#000">SK</div>
+      <div><div class="fc-name">SnipeMaster</div><div class="fc-sub">CS2 · 500 GPC</div></div>
+      <div class="fc-badge" style="color:var(--cyan);border-color:rgba(0,229,255,0.3)">● Live</div>
+    </div>
+    <div class="float-card">
+      <div class="fc-av" style="background:linear-gradient(135deg,#f0b429,#c4911a);color:#000">PG</div>
+      <div><div class="fc-name">ProGamer_CO</div><div class="fc-sub">eFootball · Div 1</div></div>
+      <div class="fc-badge" style="color:var(--gold);border-color:rgba(240,180,41,0.3)">48.5 GPC</div>
+    </div>
+    <div class="float-card">
+      <div class="fc-av" style="background:linear-gradient(135deg,#00e676,#00a152);color:#000">RK</div>
+      <div><div class="fc-name">RocketKing_BR</div><div class="fc-sub">Rocket League</div></div>
+      <div class="fc-badge" style="color:var(--green);border-color:rgba(0,230,118,0.3)">+4.7%</div>
+    </div>
+  </div>
+
+  <div style="position:relative;z-index:1;font-family:var(--mono);font-size:10px;color:var(--t3)">
+    <span style="color:var(--green)">●</span> Gamery IA online · Arbitrando retos en tiempo real
+  </div>
+</div>
+
+<!-- Panel de autenticación -->
+<div class="auth-panel">
+
+  <!-- Tabs -->
+  <div class="auth-tabs">
+    <button class="auth-tab active" onclick="showTab('login')">Ingresar</button>
+    <button class="auth-tab" onclick="showTab('register')">Registrarse</button>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- LOGIN -->
+  <div id="view-login">
+    <div class="auth-title">Bienvenido de vuelta</div>
+    <div class="auth-sub">Continúa tu carrera profesional</div>
+
+    <div class="input-group">
+      <label class="input-label">Email</label>
+      <input class="input" id="login-email" type="email" placeholder="gamer@gp.gg">
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Password</label>
+      <input class="input" id="login-pwd" type="password" placeholder="••••••••">
+    </div>
+
+    <button class="submit-btn" id="login-btn" onclick="doLogin()">Entrar a la arena →</button>
+
+    <div class="or-divider">o continúa con</div>
+
+    <div class="social-row">
+      <button class="social-btn">🌐 Google</button>
+      <button class="social-btn">🎮 Discord</button>
+    </div>
+
+    <div class="bonus-card">
+      <div class="bonus-icon">🪙</div>
+      <div>
+        <div class="bonus-title">50 GPC de bienvenida</div>
+        <div class="bonus-sub">Gratis al crear tu cuenta · ≈ $5 USD</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div id="view-register">
+    <div class="auth-title">Únete a GP</div>
+    <div class="auth-sub">Crea tu cuenta y recibe 50 GPC gratis</div>
+
+    <div class="row-2">
+      <div class="input-group">
+        <label class="input-label">Username</label>
+        <input class="input" id="reg-username" placeholder="@progamer">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nombre</label>
+        <input class="input" id="reg-nombre" placeholder="ProGamer">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Email</label>
+      <input class="input" id="reg-email" type="email" placeholder="gamer@gp.gg">
+    </div>
+
+    <div class="row-2">
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <input class="input" id="reg-pwd" type="password" placeholder="••••••••">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Confirmar</label>
+        <input class="input" id="reg-pwd2" type="password" placeholder="••••••••">
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="input-group">
+        <label class="input-label">País</label>
+        <select class="input" id="reg-pais">
+          <option value="CO">🇨🇴 Colombia</option>
+          <option value="MX">🇲🇽 México</option>
+          <option value="AR">🇦🇷 Argentina</option>
+          <option value="BR">🇧🇷 Brasil</option>
+          <option value="PE">🇵🇪 Perú</option>
+          <option value="CL">🇨🇱 Chile</option>
+          <option value="US">🇺🇸 USA</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Juego principal</label>
+        <select class="input" id="reg-juego">
+          <option value="">Selecciona...</option>
+          <option>eFootball 2025</option>
+          <option>Counter-Strike 2</option>
+          <option>Fortnite</option>
+          <option>Rocket League</option>
+          <option>Dota 2</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="reg-btn" onclick="doRegistro()">Crear cuenta y reclamar 50 GPC →</button>
+
+    <div class="bonus-card" style="margin-top:16px">
+      <div class="bonus-icon">🪙</div>
+      <div>
+        <div class="bonus-title">50 GPC al registrarte</div>
+        <div class="bonus-sub">Sin depósito · Suficiente para tu primer reto</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  redirectIfLoggedIn();
+
+  function showTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.getElementById('view-login').style.display    = tab === 'login'    ? 'block' : 'none';
+    document.getElementById('view-register').style.display = tab === 'register' ? 'block' : 'none';
+    document.getElementById('error-msg').style.display = 'none';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pwd   = document.getElementById('login-pwd').value;
+    if (!email || !pwd) { showError('Completa todos los campos'); return; }
+
+    const btn = document.getElementById('login-btn');
+    btn.textContent = 'Entrando...'; btn.disabled = true;
+
+    try {
+      const session = await API.auth.login(email, pwd);
+      Auth.setToken(session.access_token);
+      Auth.setUser(session.perfil);
+      toast('¡Bienvenido de vuelta!', 'success');
+      setTimeout(() => window.location.href = '/pages/feed.html', 800);
+    } catch (e) {
+      showError(e.message);
+      btn.textContent = 'Entrar a la arena →'; btn.disabled = false;
+    }
+  }
+
+  async function doRegistro() {
+    const username = document.getElementById('reg-username').value.trim();
+    const nombre   = document.getElementById('reg-nombre').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const pwd      = document.getElementById('reg-pwd').value;
+    const pwd2     = document.getElementById('reg-pwd2').value;
+    const pais     = document.getElementById('reg-pais').value;
+
+    if (!username || !nombre || !email || !pwd) { showError('Completa todos los campos'); return; }
+    if (pwd !== pwd2) { showError('Las contraseñas no coinciden'); return; }
+    if (pwd.length < 8) { showError('El password debe tener al menos 8 caracteres'); return; }
+
+    const btn = document.getElementById('reg-btn');
+    btn.textContent = 'Creando cuenta...'; btn.disabled = true;
+
+    try {
+      const session = await API.auth.registro({ email, password: pwd, username, nombre_display: nombre, pais, idioma_principal: 'es', tipo: 'retador' });
+      Auth.setToken(session.access_token);
+      Auth.setUser(session.perfil);
+      toast('¡Cuenta creada! 50 GPC acreditados 🎉', 'success');
+      setTimeout(() => window.location.href = '/pages/feed.html', 1000);
+    } catch (e) {
+      showError(e.message);
+      btn.textContent = 'Crear cuenta y reclamar 50 GPC →'; btn.disabled = false;
+    }
+  }
+
+  // Enter para login
+  ['login-email','login-pwd'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+</script>
+</body>
+</html>

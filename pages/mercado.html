@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Mercado Bursátil</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    .mercado-header { margin-bottom:24px; }
+    .mercado-tabs { display:flex;gap:6px;margin-bottom:24px; }
+    .mtab { padding:9px 20px;border-radius:var(--pill);font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:0.04em;background:var(--surface);border:1px solid var(--border);color:var(--t2);cursor:pointer;transition:all var(--t-fast); }
+    .mtab:hover { border-color:var(--muted);color:var(--t1); }
+    .mtab.active { background:var(--gold-faint);border-color:rgba(240,180,41,0.3);color:var(--gold); }
+
+    /* Tabla mercado */
+    .mercado-table { width:100%;border-collapse:collapse; }
+    .mercado-table thead th { font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--t3);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border); }
+    .mercado-table tbody tr { border-bottom:1px solid var(--border);transition:background var(--t-fast);cursor:pointer; }
+    .mercado-table tbody tr:hover { background:var(--elevated); }
+    .mercado-table tbody td { padding:12px; }
+    .player-cell { display:flex;align-items:center;gap:10px; }
+    .player-av-sm { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:13px;font-weight:800;flex-shrink:0; }
+    .ticker { font-family:var(--mono);font-size:11px;color:var(--gold);background:var(--gold-faint);border:1px solid rgba(240,180,41,0.2);border-radius:4px;padding:2px 8px;letter-spacing:0.08em; }
+    .price-cell { font-family:var(--display);font-size:16px;font-weight:700;color:var(--t1); }
+    .chg-cell { font-family:var(--mono);font-size:12px; }
+
+    /* Mini sparkline en tabla */
+    .mini-spark { display:flex;align-items:flex-end;gap:1px;height:28px;width:60px; }
+    .mini-bar { flex:1;border-radius:1px 1px 0 0;opacity:0.7;min-width:2px; }
+
+    /* Panel derecho portafolio */
+    .mercado-layout { display:flex;gap:24px;align-items:flex-start; }
+    .mercado-main { flex:1;min-width:0; }
+    .mercado-right { width:280px;flex-shrink:0; }
+
+    .portafolio-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:16px; }
+    .port-total { font-family:var(--display);font-size:28px;font-weight:700;color:var(--gold); }
+    .port-pl { font-family:var(--mono);font-size:11px;margin-top:4px; }
+
+    .port-item { display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border); }
+    .port-item:last-child { border-bottom:none; }
+
+    /* Modal orden */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px; }
+    .modal { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px;max-width:420px;width:100%;position:relative;animation:slide-up 0.3s ease; }
+
+    .orden-tabs { display:flex;gap:4px;background:var(--elevated);border-radius:var(--r-md);padding:4px;margin-bottom:20px; }
+    .orden-tab { flex:1;padding:8px;border-radius:var(--r-sm);border:none;cursor:pointer;font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;background:transparent;color:var(--t3);transition:all var(--t-fast); }
+    .orden-tab.active { background:var(--surface);color:var(--gold); }
+
+    .precio-display { background:var(--elevated);border-radius:var(--r-md);padding:16px;text-align:center;margin-bottom:16px; }
+    .precio-actual  { font-family:var(--display);font-size:32px;font-weight:800;color:var(--gold); }
+    .precio-sub     { font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px; }
+
+    .cantidad-input { display:flex;align-items:center;gap:10px;margin-bottom:16px; }
+    .qty-btn { width:36px;height:36px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--r-md);color:var(--t1);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t-fast); }
+    .qty-btn:hover { border-color:var(--gold);color:var(--gold); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-left:8px">/ Mercado</div>
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
+    <a href="perfil.html" class="nav-avatar" id="nav-avatar">GP</a>
+  </div>
+</nav>
+
+<div class="app-shell" style="grid-template-rows:auto">
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <a href="feed.html"    class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Arena</span></a>
+    <a href="perfil.html"  class="sidebar-item"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+    <a href="wallet.html"  class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+    <div class="sidebar-section">Mercado</div>
+    <a href="mercado.html" class="sidebar-item active"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+    <div class="sidebar-section">Ayuda</div>
+    <a href="gamery.html"  class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+  </nav>
+
+  <main class="main-content">
+    <div class="mercado-layout">
+      <div class="mercado-main">
+
+        <div class="mercado-header">
+          <h1 style="font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:6px">Bolsa GP 📈</h1>
+          <p style="color:var(--t2);font-size:14px">Invierte en jugadores como si fueran acciones. El precio sube con victorias.</p>
+        </div>
+
+        <div class="mercado-tabs">
+          <button class="mtab active" onclick="sortBy('market_cap',this)">Market Cap</button>
+          <button class="mtab" onclick="sortBy('variacion_24h',this)">↑ Ganadores</button>
+          <button class="mtab" onclick="sortBy('volumen',this)">Volumen</button>
+          <button class="mtab" onclick="sortBy('winrate',this)">Winrate</button>
+        </div>
+
+        <!-- Tabla -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+          <table class="mercado-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Jugador</th>
+                <th>Precio</th>
+                <th>24h</th>
+                <th>Market Cap</th>
+                <th>WR</th>
+                <th>7 días</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="mercado-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--t3)"><div class="loading-spinner" style="margin:0 auto 10px"></div>Cargando mercado...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /mercado-main -->
+
+      <!-- Right: Portafolio -->
+      <div class="mercado-right">
+        <h3 style="font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:14px">Mi Portafolio</h3>
+
+        <div class="portafolio-card">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px">Valor total</div>
+          <div class="port-total" id="port-total">— GPC</div>
+          <div class="port-pl" id="port-pl" style="color:var(--green)">— GPC (—%)</div>
+          <hr class="divider" style="margin:14px 0">
+          <div id="port-items">
+            <div style="color:var(--t3);font-family:var(--mono);font-size:10px;text-align:center;padding:12px">Sin acciones aún</div>
+          </div>
+        </div>
+
+        <!-- IPO disponible -->
+        <div style="background:linear-gradient(135deg,rgba(240,180,41,0.08),rgba(240,180,41,0.02));border:1px solid rgba(240,180,41,0.2);border-radius:var(--r-lg);padding:16px" id="ipo-cta" style="display:none">
+          <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--gold);margin-bottom:6px">🚀 ¡Tu IPO disponible!</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.5">Has ganado suficientes retos para salir a bolsa.</div>
+          <button class="btn btn-secondary btn-sm btn-full" onclick="showIPOModal()">Solicitar IPO</button>
+        </div>
+      </div>
+
+    </div><!-- /mercado-layout -->
+  </main>
+</div>
+
+<!-- Modal orden compra/venta -->
+<div id="modal-orden" style="display:none" class="modal-overlay" onclick="if(event.target===this)cerrarOrden()">
+  <div class="modal">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div id="modal-av" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:16px;font-weight:800"></div>
+      <div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:700" id="modal-nombre">—</div>
+        <div class="ticker" id="modal-ticker">$—</div>
+      </div>
+    </div>
+
+    <div class="orden-tabs">
+      <button class="orden-tab active" onclick="setOrdenTipo('compra',this)">Comprar</button>
+      <button class="orden-tab" onclick="setOrdenTipo('venta',this)">Vender</button>
+    </div>
+
+    <div class="precio-display">
+      <div class="precio-actual" id="modal-precio">— GPC</div>
+      <div class="precio-sub" id="modal-chg">por acción</div>
+    </div>
+
+    <label class="input-label">Cantidad de acciones</label>
+    <div class="cantidad-input">
+      <button class="qty-btn" onclick="cambiarQty(-10)">−</button>
+      <input class="input" id="qty-input" type="number" value="100" min="1" max="100000" style="text-align:center;font-family:var(--display);font-size:20px;font-weight:700" oninput="updateTotal()">
+      <button class="qty-btn" onclick="cambiarQty(10)">+</button>
+    </div>
+
+    <div style="background:var(--elevated);border-radius:var(--r-md);padding:14px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--t3)">Subtotal</span>
+        <span style="font-family:var(--display);font-size:15px;font-weight:700" id="total-gpc">— GPC</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--t3)">Fee (1%)</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--t3)" id="total-fee">— GPC</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--t3)">Total</span>
+        <span style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--gold)" id="total-final">— GPC</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-full" onclick="cerrarOrden()">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="btn-ejecutar" onclick="ejecutarOrden()">Comprar →</button>
+    </div>
+  </div>
+</div>
+
+<button class="gamery-fab" onclick="window.location.href='gamery.html'">🤖<div class="gamery-fab-pulse"></div></button>
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  let jugadores = [];
+  let ordenTipo = 'compra';
+  let jugadorActivo = null;
+
+  const MOCK_MERCADO = [
+    { username:'FootballGod_PE', ticker:'FTGD', precio_actual:89.1, variacion_24h:19.2, market_cap:89100000, winrate:89, av:'FG', color:'linear-gradient(135deg,#b388ff,#7c4dff)', tc:'#fff', retos_ganados:310 },
+    { username:'SnipeMaster_AR', ticker:'SNPM', precio_actual:67.8, variacion_24h:12.3, market_cap:67800000, winrate:82, av:'SM', color:'linear-gradient(135deg,#ff3d57,#b71c1c)', tc:'#fff', retos_ganados:198 },
+    { username:'ProGamer_CO',    ticker:'PRGM', precio_actual:48.5, variacion_24h:8.4,  market_cap:48500000, winrate:87, av:'PG', color:'linear-gradient(135deg,#f0b429,#c4911a)', tc:'#000', retos_ganados:142 },
+    { username:'RocketKing_BR',  ticker:'RKTK', precio_actual:22.4, variacion_24h:4.7,  market_cap:22400000, winrate:78, av:'RK', color:'linear-gradient(135deg,#00e5ff,#0096aa)', tc:'#000', retos_ganados:203 },
+    { username:'ElClasico_MX',   ticker:'ELCL', precio_actual:31.2, variacion_24h:-2.1, market_cap:31200000, winrate:71, av:'EK', color:'linear-gradient(135deg,#ff3d57,#880000)', tc:'#fff', retos_ganados:156 },
+    { username:'NightHunter_CL', ticker:'NHNT', precio_actual:15.6, variacion_24h:-5.3, market_cap:15600000, winrate:64, av:'NH', color:'linear-gradient(135deg,#9898b8,#5a5a78)', tc:'#fff', retos_ganados:87  },
+    { username:'ArenaMaster_CO', ticker:'ARNM', precio_actual:7.2,  variacion_24h:2.8,  market_cap:7200000,  winrate:68, av:'AM', color:'linear-gradient(135deg,#ffd166,#f0b429)', tc:'#000', retos_ganados:62  },
+  ];
+
+  const MOCK_PORTAFOLIO = [
+    { ticker:'PRGM', nombre:'ProGamer_CO', cantidad:100, precio_promedio:44.2, precio_actual:48.5, av:'PG', color:'linear-gradient(135deg,#f0b429,#c4911a)', tc:'#000' },
+    { ticker:'FTGD', nombre:'FootballGod', cantidad:50,  precio_promedio:72.0, precio_actual:89.1, av:'FG', color:'linear-gradient(135deg,#b388ff,#7c4dff)', tc:'#fff' },
+  ];
+
+  async function loadMercado() {
+    try {
+      const data = await API.mercado.get();
+      jugadores = data.jugadores || [];
+    } catch { jugadores = MOCK_MERCADO; }
+    renderTabla();
+    loadPortafolio();
+  }
+
+  function renderTabla() {
+    document.getElementById('mercado-tbody').innerHTML = jugadores.map((j, i) => {
+      const up = j.variacion_24h >= 0;
+      const sparks = Array.from({length:7},(_,k)=>Math.random()*60+20);
+      return `
+        <tr onclick="openOrden('${j.username}')">
+          <td style="font-family:var(--mono);font-size:12px;color:var(--t3)">${i+1}</td>
+          <td>
+            <div class="player-cell">
+              <div class="player-av-sm" style="background:${j.color};color:${j.tc}">${j.av}</div>
+              <div>
+                <div style="font-family:var(--ui);font-size:13px;font-weight:600">${j.username}</div>
+                <span class="ticker">$${j.ticker}</span>
+              </div>
+            </div>
+          </td>
+          <td class="price-cell">${Number(j.precio_actual).toFixed(2)} <span style="font-family:var(--mono);font-size:10px;color:var(--t3)">GPC</span></td>
+          <td class="chg-cell" style="color:${up?'var(--green)':'var(--red)'}">${up?'↑':'↓'} ${Math.abs(j.variacion_24h).toFixed(1)}%</td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">${(j.market_cap/1000000).toFixed(1)}M GPC</td>
+          <td style="font-family:var(--mono);font-size:12px;color:${j.winrate>=80?'var(--green)':'var(--t2)'}">${j.winrate}%</td>
+          <td>
+            <div class="mini-spark">
+              ${sparks.map(h=>`<div class="mini-bar" style="height:${h}%;background:${up?'var(--green)':'var(--red)'}"></div>`).join('')}
+            </div>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openOrden('${j.username}')">Invertir</button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function sortBy(criterio, btn) {
+    document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const sorted = [...jugadores].sort((a,b) => {
+      if (criterio === 'market_cap')    return b.market_cap - a.market_cap;
+      if (criterio === 'variacion_24h') return b.variacion_24h - a.variacion_24h;
+      if (criterio === 'winrate')       return b.winrate - a.winrate;
+      return b.market_cap - a.market_cap;
+    });
+    jugadores = sorted;
+    renderTabla();
+  }
+
+  function loadPortafolio() {
+    const items = MOCK_PORTAFOLIO;
+    let totalValor = 0, totalCosto = 0;
+    items.forEach(p => { totalValor += p.precio_actual * p.cantidad; totalCosto += p.precio_promedio * p.cantidad; });
+    const pl = totalValor - totalCosto;
+    const plPct = totalCosto ? (pl / totalCosto * 100).toFixed(1) : 0;
+
+    document.getElementById('port-total').textContent = GPC.format(totalValor);
+    const plEl = document.getElementById('port-pl');
+    plEl.textContent = `${pl >= 0 ? '+' : ''}${GPC.format(Math.abs(pl))} (${pl>=0?'+':''}${plPct}%)`;
+    plEl.style.color = pl >= 0 ? 'var(--green)' : 'var(--red)';
+
+    document.getElementById('port-items').innerHTML = items.map(p => {
+      const val = p.precio_actual * p.cantidad;
+      const pl2 = (p.precio_actual - p.precio_promedio) * p.cantidad;
+      return `
+        <div class="port-item">
+          <div style="width:28px;height:28px;border-radius:50%;background:${p.color};color:${p.tc};display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:10px;font-weight:800;flex-shrink:0">${p.av}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--ui);font-size:12px;font-weight:600">${p.nombre}</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${p.cantidad.toLocaleString()} acc · $${p.ticker}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--gold)">${GPC.format(val)}</div>
+            <div style="font-family:var(--mono);font-size:9px;color:${pl2>=0?'var(--green)':'var(--red)'}">${pl2>=0?'+':''}${GPC.format(Math.abs(pl2))}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function openOrden(username) {
+    jugadorActivo = jugadores.find(j => j.username === username);
+    if (!jugadorActivo) return;
+
+    const up = jugadorActivo.variacion_24h >= 0;
+    document.getElementById('modal-av').style.background = jugadorActivo.color;
+    document.getElementById('modal-av').style.color = jugadorActivo.tc;
+    document.getElementById('modal-av').textContent = jugadorActivo.av;
+    document.getElementById('modal-nombre').textContent = jugadorActivo.username;
+    document.getElementById('modal-ticker').textContent = `$${jugadorActivo.ticker}`;
+    document.getElementById('modal-precio').textContent = `${jugadorActivo.precio_actual.toFixed(2)} GPC`;
+    document.getElementById('modal-chg').textContent = `por acción · ${up?'↑':'↓'}${Math.abs(jugadorActivo.variacion_24h).toFixed(1)}% hoy`;
+    document.getElementById('modal-chg').style.color = up ? 'var(--green)' : 'var(--red)';
+    document.getElementById('qty-input').value = 100;
+    updateTotal();
+    document.getElementById('modal-orden').style.display = 'flex';
+  }
+
+  function cerrarOrden() { document.getElementById('modal-orden').style.display = 'none'; }
+
+  function setOrdenTipo(tipo, btn) {
+    ordenTipo = tipo;
+    document.querySelectorAll('.orden-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('btn-ejecutar').textContent = tipo === 'compra' ? 'Comprar →' : 'Vender →';
+    updateTotal();
+  }
+
+  function cambiarQty(delta) {
+    const input = document.getElementById('qty-input');
+    input.value = Math.max(1, parseInt(input.value || 0) + delta);
+    updateTotal();
+  }
+
+  function updateTotal() {
+    if (!jugadorActivo) return;
+    const qty      = parseInt(document.getElementById('qty-input').value) || 0;
+    const subtotal = qty * jugadorActivo.precio_actual;
+    const fee      = subtotal * 0.01;
+    const total    = ordenTipo === 'compra' ? subtotal + fee : subtotal - fee;
+    document.getElementById('total-gpc').textContent   = GPC.format(Math.round(subtotal));
+    document.getElementById('total-fee').textContent   = GPC.format(Math.round(fee));
+    document.getElementById('total-final').textContent = GPC.format(Math.round(total));
+  }
+
+  async function ejecutarOrden() {
+    if (!jugadorActivo) return;
+    const qty = parseInt(document.getElementById('qty-input').value);
+    const btn = document.getElementById('btn-ejecutar');
+    btn.textContent = 'Procesando...'; btn.disabled = true;
+
+    try {
+      const ipoData = await API.mercado.getJugador(jugadorActivo.username);
+      await API.mercado.orden({ ipo_id: ipoData.ipo.id, tipo: ordenTipo, cantidad: qty });
+      toast(`${ordenTipo === 'compra' ? 'Compraste' : 'Vendiste'} ${qty.toLocaleString()} acciones de $${jugadorActivo.ticker} ✓`, 'success');
+      cerrarOrden();
+      loadPortafolio();
+    } catch (e) {
+      toast(e.message || `${ordenTipo === 'compra' ? 'Compra' : 'Venta'} registrada (demo)`, 'success');
+      cerrarOrden();
+    }
+    btn.disabled = false;
+    btn.textContent = ordenTipo === 'compra' ? 'Comprar →' : 'Vender →';
+  }
+
+  loadMercado();
+  initNavbar();
+</script>
+</body>
+</html>

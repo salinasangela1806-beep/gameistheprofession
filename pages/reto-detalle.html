@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Detalle del Reto</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    .reto-layout { display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start; }
+
+    /* Estado banner */
+    .estado-banner { border-radius:var(--r-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px; }
+    .estado-icon { font-size:24px; }
+    .estado-title { font-family:var(--display);font-size:16px;font-weight:700; }
+    .estado-sub   { font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:2px; }
+
+    /* Jugadores VS */
+    .pvp-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:24px;margin-bottom:16px; }
+    .pvp-full { display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center; }
+    .pvp-player-full { display:flex;flex-direction:column;align-items:center;gap:10px; }
+    .pvp-avatar-lg { width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:26px;font-weight:800;border:3px solid;position:relative; }
+    .pvp-ring-anim { position:absolute;inset:-6px;border-radius:50%;border:2px solid;animation:ring-pulse 2.5s infinite; }
+    @keyframes ring-pulse{0%,100%{transform:scale(1);opacity:0.4}50%{transform:scale(1.08);opacity:0.1}}
+    .pvp-name-lg  { font-family:var(--display);font-size:18px;font-weight:700;text-align:center; }
+    .pvp-tag-lg   { font-family:var(--mono);font-size:10px;color:var(--t3);text-align:center; }
+    .pvp-stats-lg { display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%; }
+    .pvs-stat { background:var(--elevated);border-radius:var(--r-sm);padding:6px 4px;text-align:center; }
+    .pvs-v { font-family:var(--display);font-size:14px;font-weight:700;line-height:1; }
+    .pvs-l { font-family:var(--mono);font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px; }
+    .pvp-vs-lg { font-family:var(--display);font-size:28px;font-weight:900;color:var(--red);text-align:center;line-height:1; }
+
+    /* Detalles del reto */
+    .reto-details { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:16px; }
+    .detail-row { display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border); }
+    .detail-row:last-child { border-bottom:none; }
+    .detail-label { font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:0.08em;text-transform:uppercase; }
+    .detail-value { font-family:var(--ui);font-size:14px;font-weight:600; }
+
+    /* Escrow visual */
+    .escrow-card { background:linear-gradient(135deg,rgba(240,180,41,0.08),rgba(240,180,41,0.02));border:1px solid rgba(240,180,41,0.2);border-radius:var(--r-lg);padding:20px;margin-bottom:16px; }
+    .escrow-total { font-family:var(--display);font-size:32px;font-weight:800;color:var(--gold);text-align:center; }
+    .escrow-breakdown { display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:16px; }
+    .escrow-player { background:rgba(0,0,0,0.3);border-radius:var(--r-md);padding:12px;text-align:center; }
+    .escrow-label-sm { font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;text-transform:uppercase; }
+    .escrow-val-sm   { font-family:var(--display);font-size:18px;font-weight:700;color:var(--t1); }
+    .escrow-plus     { font-family:var(--display);font-size:20px;font-weight:700;color:var(--t3);text-align:center; }
+
+    /* Odds de sponsors */
+    .odds-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:16px; }
+    .odds-bar-wrap { height:8px;background:var(--elevated);border-radius:var(--pill);overflow:hidden;margin:12px 0; }
+    .odds-bar-j1 { height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-dim));border-radius:var(--pill) 0 0 var(--pill);transition:width 0.5s ease; }
+    .odds-players { display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px; }
+
+    /* Evidencia */
+    .evidencia-section { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:16px; }
+    .evidencia-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+    .ev-slot {
+      border:2px dashed var(--border);border-radius:var(--r-lg);
+      min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:8px;cursor:pointer;transition:all var(--t-fast);text-align:center;padding:16px;
+    }
+    .ev-slot:hover { border-color:var(--gold);background:var(--gold-faint); }
+    .ev-slot.uploaded { border-style:solid;border-color:var(--green);background:rgba(0,230,118,0.04); }
+    .ev-icon { font-size:32px; }
+    .ev-label { font-family:var(--ui);font-size:13px;font-weight:600; }
+    .ev-sub   { font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.08em; }
+
+    /* Gamery veredicto */
+    .veredicto-card { border-radius:var(--r-xl);padding:24px;text-align:center; }
+    .veredicto-icon { font-size:48px;margin-bottom:12px; }
+    .veredicto-title { font-family:var(--display);font-size:24px;font-weight:800;margin-bottom:8px; }
+    .veredicto-razon { font-family:var(--ui);font-size:14px;color:var(--t2);line-height:1.6; }
+    .confianza-bar { height:6px;background:var(--elevated);border-radius:var(--pill);overflow:hidden;margin:14px 0 6px; }
+    .confianza-fill{ height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:var(--pill); }
+
+    /* Chat del reto */
+    .chat-container { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden; }
+    .chat-header { padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--display);font-size:14px;font-weight:700; }
+    .chat-messages { padding:12px;max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:8px; }
+    .chat-msg { padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.4;max-width:85%; }
+    .chat-msg.sistema { background:var(--elevated);color:var(--t2);border:1px solid var(--border);align-self:center;text-align:center;font-family:var(--mono);font-size:10px;max-width:100%; }
+    .chat-msg.gamery  { background:var(--gold-faint);border:1px solid rgba(240,180,41,0.15);align-self:flex-start; }
+    .chat-msg.mio     { background:var(--elevated);border:1px solid var(--border);align-self:flex-end; }
+    .chat-input-row   { display:flex;gap:8px;padding:10px;border-top:1px solid var(--border); }
+    .chat-input { flex:1;background:var(--elevated);border:1px solid var(--border);border-radius:var(--r-md);padding:9px 12px;color:var(--t1);font-family:var(--ui);font-size:13px;outline:none; }
+    .chat-input:focus { border-color:var(--gold); }
+    .chat-send { width:36px;height:36px;background:var(--gold);border:none;border-radius:var(--r-md);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center; }
+
+    /* Sponsors apuesta */
+    .apostar-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:12px; }
+    .apostar-title { font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:12px; }
+    .apostar-players { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px; }
+    .apostar-btn { padding:12px;border-radius:var(--r-md);border:1px solid;cursor:pointer;text-align:center;transition:all var(--t-fast); }
+    .apostar-btn:hover { transform:translateY(-2px); }
+    .apostar-j1 { border-color:rgba(240,180,41,0.3);background:var(--gold-faint);color:var(--gold); }
+    .apostar-j2 { border-color:rgba(0,229,255,0.3);background:var(--cyan-faint);color:var(--cyan); }
+    .apostar-btn.selected { box-shadow:0 0 12px rgba(240,180,41,0.2); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="feed.html" style="display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:11px;text-decoration:none;margin-right:4px">← Volver</a>
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
+    <a href="perfil.html" class="nav-avatar" id="nav-avatar">GP</a>
+  </div>
+</nav>
+
+<div class="app-shell" style="grid-template-rows:auto">
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <a href="feed.html"   class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Arena</span></a>
+    <a href="perfil.html" class="sidebar-item"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+    <a href="retos.html"  class="sidebar-item active"><span class="sidebar-icon">🏆</span><span class="sidebar-label">Mis Retos</span></a>
+    <a href="wallet.html" class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+    <div class="sidebar-section">Mercado</div>
+    <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+    <div class="sidebar-section">Ayuda</div>
+    <a href="gamery.html" class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+  </nav>
+
+  <main class="main-content">
+    <div class="reto-layout">
+
+      <!-- Columna principal -->
+      <div>
+        <!-- Estado banner -->
+        <div id="estado-banner" class="estado-banner"></div>
+
+        <!-- PvP card -->
+        <div class="pvp-card">
+          <div class="pvp-full">
+            <div class="pvp-player-full" id="pvp-j1"></div>
+            <div>
+              <div class="pvp-vs-lg">VS</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--t3);text-align:center;margin-top:6px;letter-spacing:0.1em" id="pvp-juego">—</div>
+            </div>
+            <div class="pvp-player-full" id="pvp-j2"></div>
+          </div>
+        </div>
+
+        <!-- Escrow -->
+        <div class="escrow-card" id="escrow-card"></div>
+
+        <!-- Detalles -->
+        <div class="reto-details" id="reto-details"></div>
+
+        <!-- Odds sponsors -->
+        <div class="odds-card" id="odds-card">
+          <div style="font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:6px">Apuestas de Sponsors</div>
+          <div class="odds-bar-wrap"><div class="odds-bar-j1" id="odds-bar" style="width:50%"></div></div>
+          <div class="odds-players">
+            <span id="odds-j1-info">— GPC (1.85x)</span>
+            <span id="odds-j2-info">— GPC (1.95x)</span>
+          </div>
+        </div>
+
+        <!-- Evidencia -->
+        <div class="evidencia-section" id="evidencia-section">
+          <div style="font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:16px">📸 Subir evidencia del resultado</div>
+          <div class="evidencia-grid">
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;margin-bottom:8px">TU CAPTURA</div>
+              <div class="ev-slot" id="ev-mi-slot" onclick="document.getElementById('ev-mi-file').click()">
+                <div class="ev-icon">📤</div>
+                <div class="ev-label">Subir screenshot</div>
+                <div class="ev-sub">PNG · JPG · MP4 · Max 50MB</div>
+              </div>
+              <input type="file" id="ev-mi-file" accept="image/*,video/*" style="display:none" onchange="subirEvidencia(this,'mi')">
+            </div>
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;margin-bottom:8px">CAPTURA OPONENTE</div>
+              <div class="ev-slot" id="ev-opp-slot">
+                <div class="ev-icon" id="ev-opp-icon">⏳</div>
+                <div class="ev-label" id="ev-opp-label">Pendiente</div>
+                <div class="ev-sub">Esperando al oponente</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Veredicto Gamery -->
+        <div id="veredicto-section" style="display:none"></div>
+
+        <!-- Chat -->
+        <div class="chat-container">
+          <div class="chat-header">💬 Chat del reto</div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-msg sistema">Reto creado · Ambos jugadores deben depositar para activar el escrow</div>
+            <div class="chat-msg gamery">🤖 <strong>Gamery:</strong> Hola! Estoy monitoreando este reto. Una vez que ambos suban la evidencia, analizaré el resultado y determinaré el ganador automáticamente.</div>
+          </div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="chat-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="chat-send" onclick="sendChat()">→</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna derecha -->
+      <div>
+        <!-- Acciones del reto -->
+        <div class="card mb-4" id="acciones-card" style="margin-bottom:14px">
+          <div style="font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:14px">Acciones</div>
+          <div id="acciones-btns" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
+        <!-- Apostar (para sponsors) -->
+        <div class="apostar-card" id="apostar-section">
+          <div class="apostar-title">💰 Apostar como Sponsor</div>
+          <div style="font-family:var(--ui);font-size:13px;color:var(--t2);margin-bottom:12px">¿A quién le apostás?</div>
+          <div class="apostar-players">
+            <div class="apostar-btn apostar-j1" id="apostar-j1-btn" onclick="selectJugadorApuesta('j1',this)">
+              <div style="font-family:var(--display);font-size:14px;font-weight:700" id="apostar-j1-name">J1</div>
+              <div style="font-family:var(--mono);font-size:11px;margin-top:3px" id="apostar-j1-odds">1.85x</div>
+            </div>
+            <div class="apostar-btn apostar-j2" id="apostar-j2-btn" onclick="selectJugadorApuesta('j2',this)">
+              <div style="font-family:var(--display);font-size:14px;font-weight:700" id="apostar-j2-name">J2</div>
+              <div style="font-family:var(--mono);font-size:11px;margin-top:3px" id="apostar-j2-odds">1.95x</div>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Monto (GPC)</label>
+            <input class="input" id="apuesta-monto" type="number" placeholder="Min 10 GPC" min="10" value="100">
+          </div>
+          <div style="background:var(--elevated);border-radius:var(--r-md);padding:10px;margin-bottom:12px;font-family:var(--mono);font-size:11px;color:var(--t3)">
+            Ganancia potencial: <span style="color:var(--green);font-weight:600" id="ganancia-potencial">— GPC</span>
+          </div>
+          <button class="btn btn-secondary btn-full" onclick="hacerApuesta()">Apostar →</button>
+        </div>
+
+        <!-- Espectador -->
+        <div class="card mt-4" style="margin-top:12px" id="espectador-card">
+          <div style="font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:10px">👁️ Ver en vivo</div>
+          <div style="font-size:13px;color:var(--t2);margin-bottom:12px" id="espectador-info">Este reto tiene transmisión en vivo.</div>
+          <button class="btn btn-ghost btn-full" id="btn-ticket" onclick="comprarTicket()">🎫 Obtener ticket (gratis)</button>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3);text-align:center;margin-top:8px" id="espectadores-count">0 espectadores</div>
+        </div>
+      </div>
+
+    </div><!-- /reto-layout -->
+  </main>
+</div>
+
+<button class="gamery-fab" onclick="window.location.href='gamery.html'">🤖<div class="gamery-fab-pulse"></div></button>
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  const params = new URLSearchParams(window.location.search);
+  const retoId = params.get('id') || '1';
+  let reto = null;
+  let odds = null;
+  let jugadorApuestaSeleccionado = null;
+  const myUser = Auth.getUser();
+
+  const MOCK_RETO = {
+    id: retoId, jugador_1_id: 'u1', jugador_2_id: 'u2',
+    j1_username: 'ProGamer_CO',    j1_winrate: 87.3, j1_nivel: 24, j1_pais: '🇨🇴',
+    j2_username: 'ElClasico_MX',   j2_winrate: 71.0, j2_nivel: 15, j2_pais: '🇲🇽',
+    nombre_juego: 'eFootball 2025', modalidad: '1v1 Competitivo',
+    condiciones: 'Modo División, 2 partidos, gana el que más puntos acumule',
+    monto_apuesta: 500, monto_usd_ref: 50,
+    estado: 'programado', resultado: 'sin_resolver',
+    fecha_confirmada: new Date(Date.now() + 86400000).toISOString(),
+    espectadores_count: 12, apuestas_count: 8, volumen_apuestas: 3200,
+    evidencia_j1_url: null, evidencia_j2_url: null,
+  };
+
+  const MOCK_ODDS = {
+    jugador_1: { username:'ProGamer_CO', odds:1.85, volumen_gpc:2100, apostadores:5 },
+    jugador_2: { username:'ElClasico_MX',odds:1.95, volumen_gpc:1100, apostadores:3 },
+    volumen_total_gpc: 3200,
+  };
+
+  async function loadReto() {
+    try {
+      reto = await API.retos.getReto(retoId);
+      odds = await API.sponsors.odds(retoId);
+    } catch {
+      reto = MOCK_RETO;
+      odds = MOCK_ODDS;
+    }
+    renderReto();
+    renderOdds();
+  }
+
+  function renderReto() {
+    document.title = `GP – ${reto.j1_username} VS ${reto.j2_username}`;
+
+    // Estado banner
+    const estadoCfg = {
+      pendiente:   { icon:'⏳', title:'Esperando respuesta', sub:'Aún no se ha aceptado el reto', bg:'var(--elevated)', border:'var(--border)' },
+      aceptado:    { icon:'✅', title:'Reto aceptado', sub:'Coordinen la fecha y hora', bg:'rgba(0,230,118,0.06)', border:'rgba(0,230,118,0.2)' },
+      programado:  { icon:'📅', title:'Reto programado', sub:`Fecha: ${reto.fecha_confirmada ? new Date(reto.fecha_confirmada).toLocaleString('es-CO') : '—'}`, bg:'rgba(0,229,255,0.06)', border:'rgba(0,229,255,0.2)' },
+      en_curso:    { icon:'🎮', title:'¡En curso ahora!', sub:'El reto está siendo jugado en este momento', bg:'rgba(0,229,255,0.06)', border:'rgba(0,229,255,0.2)' },
+      evidencia_requerida:{ icon:'📸', title:'Sube la evidencia', sub:'Ambos jugadores deben subir el screenshot del resultado', bg:'rgba(240,180,41,0.06)', border:'rgba(240,180,41,0.2)' },
+      resuelto:    { icon:'🏆', title:'Reto resuelto', sub:'Gamery ha determinado el ganador', bg:'rgba(0,230,118,0.06)', border:'rgba(0,230,118,0.2)' },
+      en_disputa:  { icon:'⚠️', title:'En disputa', sub:'Las evidencias son contradictorias. Revisión manual en curso', bg:'rgba(255,61,87,0.06)', border:'rgba(255,61,87,0.2)' },
+      cancelado:   { icon:'❌', title:'Reto cancelado', sub:'Los fondos han sido devueltos', bg:'var(--elevated)', border:'var(--border)' },
+    };
+
+    const cfg = estadoCfg[reto.estado] || estadoCfg.pendiente;
+    document.getElementById('estado-banner').style.background = cfg.bg;
+    document.getElementById('estado-banner').style.border = `1px solid ${cfg.border}`;
+    document.getElementById('estado-banner').innerHTML = `
+      <div class="estado-icon">${cfg.icon}</div>
+      <div><div class="estado-title">${cfg.title}</div><div class="estado-sub">${cfg.sub}</div></div>
+      <span class="badge badge-${reto.estado==='resuelto'?'green':reto.estado==='en_disputa'?'red':'cyan'}" style="margin-left:auto">${reto.estado.replace(/_/g,' ')}</span>`;
+
+    // PvP
+    renderPlayer('pvp-j1', reto.j1_username, reto.j1_winrate, reto.j1_nivel, reto.j1_pais, true);
+    renderPlayer('pvp-j2', reto.j2_username, reto.j2_winrate, reto.j2_nivel, reto.j2_pais, false);
+    document.getElementById('pvp-juego').textContent = `${reto.nombre_juego} · ${reto.modalidad}`;
+
+    // Escrow
+    document.getElementById('escrow-card').innerHTML = `
+      <div style="font-family:var(--mono);font-size:9px;color:var(--gold-dim);letter-spacing:0.12em;text-transform:uppercase;text-align:center;margin-bottom:6px">Premio total en escrow</div>
+      <div class="escrow-total">${GPC.format(reto.monto_apuesta * 2)}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);text-align:center;margin-top:4px">≈ ${GPC.toUSD(reto.monto_apuesta * 2)} · El ganador recibe ${GPC.format(reto.monto_apuesta * 2 * 0.95)}</div>
+      <div class="escrow-breakdown" style="margin-top:16px">
+        <div class="escrow-player">
+          <div class="escrow-label-sm">${reto.j1_username?.slice(0,10) || 'J1'}</div>
+          <div class="escrow-val-sm">${GPC.format(reto.monto_apuesta)}</div>
+        </div>
+        <div class="escrow-plus">+</div>
+        <div class="escrow-player">
+          <div class="escrow-label-sm">${reto.j2_username?.slice(0,10) || 'J2'}</div>
+          <div class="escrow-val-sm">${GPC.format(reto.monto_apuesta)}</div>
+        </div>
+      </div>`;
+
+    // Detalles
+    document.getElementById('reto-details').innerHTML = `
+      <div style="font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:4px">Detalles del reto</div>
+      ${[
+        ['Juego',       reto.nombre_juego],
+        ['Modalidad',   reto.modalidad],
+        ['Apuesta',     `${GPC.format(reto.monto_apuesta)} (≈ ${GPC.toUSD(reto.monto_apuesta)})`],
+        ['Condiciones', reto.condiciones || 'Ganar la partida'],
+        ['Espectadores',`${reto.espectadores_count} personas viendo`],
+        ['Apuestas',    `${reto.apuestas_count} sponsors · ${GPC.format(reto.volumen_apuestas)} en juego`],
+      ].map(([l,v]) => `<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-value">${v}</span></div>`).join('')}`;
+
+    // Botones de acción
+    renderAcciones();
+
+    // Evidencia
+    const evSection = document.getElementById('evidencia-section');
+    if (!['evidencia_requerida','en_curso','programado'].includes(reto.estado)) {
+      evSection.style.display = 'none';
+    }
+
+    // Veredicto
+    if (reto.gamery_veredicto) renderVeredicto(reto.gamery_veredicto);
+
+    // Apostar
+    document.getElementById('apostar-j1-name').textContent = reto.j1_username?.slice(0,10) || 'J1';
+    document.getElementById('apostar-j2-name').textContent = reto.j2_username?.slice(0,10) || 'J2';
+    document.getElementById('espectadores-count').textContent = `${reto.espectadores_count} espectadores`;
+    document.getElementById('btn-ticket').textContent = reto.precio_espectador
+      ? `🎫 Comprar ticket (${GPC.format(reto.precio_espectador)})`
+      : '🎫 Ver gratis';
+  }
+
+  function renderPlayer(elId, username, wr, nivel, pais, isJ1) {
+    const color = isJ1 ? 'linear-gradient(135deg,var(--gold),var(--gold-dim))' : 'linear-gradient(135deg,#00e5ff,#0096aa)';
+    const borderColor = isJ1 ? 'var(--gold)' : 'var(--cyan)';
+    const ringColor   = isJ1 ? 'rgba(240,180,41,0.4)' : 'rgba(0,229,255,0.4)';
+    const tc = '#000';
+    document.getElementById(elId).innerHTML = `
+      <div class="pvp-avatar-lg" style="background:${color};border-color:${borderColor};color:${tc}">
+        <div class="pvp-ring-anim" style="border-color:${ringColor}"></div>
+        ${initials(username || '')}
+      </div>
+      <div class="pvp-name-lg">${username || '—'}</div>
+      <div class="pvp-tag-lg">${pais||'🌍'} · Nv.${nivel||'—'}</div>
+      <div class="pvp-stats-lg">
+        <div class="pvs-stat"><div class="pvs-v text-gold">${wr?wr.toFixed(0)+'%':'—'}</div><div class="pvs-l">WR</div></div>
+        <div class="pvs-stat"><div class="pvs-v" style="cursor:pointer" onclick="window.location.href='perfil.html?u=${username}'">→ Perfil</div><div class="pvs-l">Ver</div></div>
+        <div class="pvs-stat"><div class="pvs-v text-cyan">${nivel||'—'}</div><div class="pvs-l">Nivel</div></div>
+      </div>`;
+  }
+
+  function renderOdds() {
+    if (!odds) return;
+    const vol1 = odds.jugador_1?.volumen_gpc || 0;
+    const vol2 = odds.jugador_2?.volumen_gpc || 0;
+    const total = vol1 + vol2 || 1;
+    const pct1 = Math.round(vol1 / total * 100);
+    document.getElementById('odds-bar').style.width = `${pct1}%`;
+    document.getElementById('odds-j1-info').textContent = `${GPC.format(vol1)} (${odds.jugador_1?.odds||2}x)`;
+    document.getElementById('odds-j2-info').textContent = `${GPC.format(vol2)} (${odds.jugador_2?.odds||2}x)`;
+    document.getElementById('apostar-j1-odds').textContent = `${odds.jugador_1?.odds||1.85}x`;
+    document.getElementById('apostar-j2-odds').textContent = `${odds.jugador_2?.odds||1.95}x`;
+  }
+
+  function renderAcciones() {
+    const soyJ1 = myUser && (reto.jugador_1_id === myUser.id || reto.j1_username === myUser.username);
+    const soyJ2 = myUser && (reto.jugador_2_id === myUser.id || reto.j2_username === myUser.username);
+    const soyParticipante = soyJ1 || soyJ2;
+
+    let btns = '';
+    if (reto.estado === 'pendiente' && !soyJ1) {
+      btns += `<button class="btn btn-primary btn-full" onclick="aceptarReto()">✅ Aceptar reto</button>`;
+      btns += `<button class="btn btn-danger btn-full" onclick="rechazarReto()">✕ Rechazar</button>`;
+    }
+    if (reto.estado === 'aceptado' && soyParticipante) {
+      btns += `<button class="btn btn-secondary btn-full" onclick="programarReto()">📅 Programar fecha</button>`;
+    }
+    if (['en_curso','programado','evidencia_requerida'].includes(reto.estado) && soyParticipante) {
+      btns += `<button class="btn btn-primary btn-full" onclick="document.getElementById('ev-mi-file').click()">📸 Subir evidencia</button>`;
+    }
+    if (!btns) {
+      btns = `<div style="font-family:var(--mono);font-size:10px;color:var(--t3);text-align:center;padding:8px">Sin acciones disponibles</div>`;
+    }
+    document.getElementById('acciones-btns').innerHTML = btns;
+  }
+
+  function renderVeredicto(v) {
+    const sec = document.getElementById('veredicto-section');
+    sec.style.display = 'block';
+    const gano = v.ganador === 'jugador_1' ? reto.j1_username : reto.j2_username;
+    const color = v.ganador === 'disputa' ? 'var(--red)' : 'rgba(0,230,118,0.08)';
+    const border = v.ganador === 'disputa' ? 'rgba(255,61,87,0.2)' : 'rgba(0,230,118,0.2)';
+    sec.innerHTML = `
+      <div class="veredicto-card" style="background:${color};border:1px solid ${border};margin-bottom:16px">
+        <div class="veredicto-icon">${v.ganador==='disputa'?'⚠️':'🤖'}</div>
+        <div class="veredicto-title">${v.ganador==='disputa'?'En disputa':`¡${gano} gana!`}</div>
+        <div class="veredicto-razon">${v.razonamiento || v.mensaje_jugadores}</div>
+        <div style="margin-top:12px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:4px">CONFIANZA DE GAMERY</div>
+          <div class="confianza-bar"><div class="confianza-fill" style="width:${(v.confianza||0)*100}%"></div></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${((v.confianza||0)*100).toFixed(0)}% de certeza</div>
+        </div>
+      </div>`;
+  }
+
+  // Acciones
+  async function aceptarReto() {
+    try { await API.retos.aceptar(retoId); toast('Reto aceptado ✓', 'success'); loadReto(); }
+    catch (e) { toast(e.message,'error'); }
+  }
+
+  async function rechazarReto() {
+    try { await API.retos.rechazar(retoId); toast('Reto rechazado. GPC devueltos.', 'info'); window.location.href='feed.html'; }
+    catch { window.location.href='feed.html'; }
+  }
+
+  function programarReto() {
+    const fecha = prompt('Ingresa la fecha y hora del reto (ej: 2025-06-15T20:00:00)');
+    if (!fecha) return;
+    API.retos.programar(retoId, fecha)
+      .then(() => { toast('Fecha programada ✓', 'success'); loadReto(); })
+      .catch(e => toast(e.message,'error'));
+  }
+
+  async function subirEvidencia(input, quien) {
+    const file = input.files[0];
+    if (!file) return;
+    const slot = document.getElementById(quien === 'mi' ? 'ev-mi-slot' : 'ev-opp-slot');
+    slot.innerHTML = '<div class="ev-icon">⏳</div><div class="ev-label">Subiendo...</div>';
+    try {
+      await API.retos.subirEvidencia(retoId, file);
+      slot.classList.add('uploaded');
+      slot.innerHTML = '<div class="ev-icon">✅</div><div class="ev-label">Evidencia subida</div><div class="ev-sub">Gamery está analizando...</div>';
+      toast('Evidencia subida. Gamery está analizando... 🤖', 'success');
+    } catch (e) {
+      toast(e.message || 'Error subiendo evidencia', 'error');
+      slot.innerHTML = '<div class="ev-icon">📤</div><div class="ev-label">Reintentar</div>';
+    }
+  }
+
+  // Sponsors
+  function selectJugadorApuesta(jugador, btn) {
+    document.querySelectorAll('.apostar-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    jugadorApuestaSeleccionado = jugador;
+    calcGanancia();
+  }
+
+  function calcGanancia() {
+    const monto = parseFloat(document.getElementById('apuesta-monto').value) || 0;
+    const oddsVal = jugadorApuestaSeleccionado === 'j1' ? (odds?.jugador_1?.odds||1.85) : (odds?.jugador_2?.odds||1.95);
+    const ganancia = monto * oddsVal - monto;
+    document.getElementById('ganancia-potencial').textContent = GPC.format(Math.round(ganancia));
+  }
+
+  document.getElementById('apuesta-monto').addEventListener('input', calcGanancia);
+
+  async function hacerApuesta() {
+    if (!jugadorApuestaSeleccionado) { toast('Selecciona un jugador primero','error'); return; }
+    const monto = parseFloat(document.getElementById('apuesta-monto').value);
+    if (!monto || monto < 10) { toast('Mínimo 10 GPC','error'); return; }
+    const jugadorId = jugadorApuestaSeleccionado === 'j1' ? reto.jugador_1_id : reto.jugador_2_id;
+    try {
+      await API.sponsors.apostar({ reto_id: retoId, jugador_apostado_id: jugadorId, monto_gpc: monto });
+      toast(`Apuesta de ${GPC.format(monto)} registrada ✓`, 'success');
+    } catch (e) { toast(e.message || 'Apuesta registrada (demo)', 'success'); }
+  }
+
+  async function comprarTicket() {
+    try {
+      const res = await API.espectadores.comprarTicket(retoId);
+      toast(`Ticket obtenido. Números de rifa: ${res.numeros_rifa?.join(', ')} 🎫`, 'success');
+      document.getElementById('btn-ticket').textContent = '✅ Tienes acceso';
+      document.getElementById('btn-ticket').disabled = true;
+    } catch { toast('Acceso concedido (demo) 🎫', 'success'); }
+  }
+
+  // Chat
+  async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    addChatMsg(msg, 'mio');
+    try {
+      const res = await API.gamery.chat(msg, [], retoId);
+      addChatMsg(`🤖 Gamery: ${res.respuesta}`, 'gamery');
+    } catch { addChatMsg('🤖 Gamery: No disponible en este momento.', 'gamery'); }
+  }
+
+  function addChatMsg(text, tipo) {
+    const div = document.createElement('div');
+    div.className = `chat-msg ${tipo}`;
+    div.textContent = text;
+    const msgs = document.getElementById('chat-messages');
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  loadReto();
+  initNavbar();
+</script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Gamery IA</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    .gamery-layout { display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start; }
+
+    /* Hero de Gamery */
+    .gamery-hero {
+      background:linear-gradient(135deg,rgba(240,180,41,0.08) 0%,rgba(0,229,255,0.04) 100%);
+      border:1px solid rgba(240,180,41,0.2); border-radius:var(--r-xl);
+      padding:28px; margin-bottom:20px; display:flex; align-items:center; gap:20px;
+    }
+
+    .gamery-avatar-hero {
+      width:80px; height:80px; border-radius:50%;
+      background:var(--gold); border:3px solid rgba(240,180,41,0.3);
+      display:flex; align-items:center; justify-content:center; font-size:36px;
+      flex-shrink:0; box-shadow:0 0 32px var(--gold-faint);
+      animation:gamery-pulse 3s ease infinite;
+    }
+
+    @keyframes gamery-pulse {
+      0%,100%{box-shadow:0 0 32px var(--gold-faint)}
+      50%{box-shadow:0 0 48px rgba(240,180,41,0.25)}
+    }
+
+    .gamery-online-dot { display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:5px;animation:blink 2s infinite; }
+    .gamery-title { font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:4px; }
+    .gamery-subtitle { color:var(--t2);font-size:14px;margin-bottom:12px; }
+
+    .gamery-caps { display:flex;gap:6px;flex-wrap:wrap; }
+    .cap-badge { font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:var(--pill);letter-spacing:0.08em;text-transform:uppercase; }
+
+    /* Chat principal */
+    .chat-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;display:flex;flex-direction:column;height:calc(100vh - 260px);min-height:400px; }
+
+    .chat-header-gm { padding:16px 20px;border-bottom:1px solid var(--border);background:var(--elevated);display:flex;align-items:center;gap:10px; }
+    .chat-header-av { width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:16px; }
+
+    .chat-body { flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px; }
+
+    .msg { display:flex;gap:8px;max-width:85%; }
+    .msg.user { align-self:flex-end;flex-direction:row-reverse; }
+    .msg.bot  { align-self:flex-start; }
+
+    .msg-av { width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0; }
+    .msg-av.bot  { background:var(--gold); }
+    .msg-av.user { background:linear-gradient(135deg,var(--gold),var(--gold-dim));font-family:var(--display);font-size:10px;font-weight:800;color:var(--black); }
+
+    .msg-bubble { background:var(--elevated);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.55;color:var(--t1); }
+    .msg.user .msg-bubble { background:var(--gold-faint);border-color:rgba(240,180,41,0.15); }
+    .msg-bubble strong { color:var(--gold); }
+    .msg-time { font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px;text-align:right; }
+
+    .typing-dots { display:flex;gap:4px;align-items:center;padding:12px 14px; }
+    .typing-dot { width:6px;height:6px;background:var(--gold);border-radius:50%;animation:typing 1.2s infinite; }
+    .typing-dot:nth-child(2){animation-delay:0.2s}
+    .typing-dot:nth-child(3){animation-delay:0.4s}
+    @keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:0.3} 30%{transform:translateY(-4px);opacity:1} }
+
+    .chat-footer { padding:14px;border-top:1px solid var(--border);background:var(--elevated); }
+    .chat-input-row { display:flex;gap:8px; }
+    .chat-inp { flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;color:var(--t1);font-family:var(--ui);font-size:14px;outline:none;transition:border-color var(--t-fast); }
+    .chat-inp:focus { border-color:var(--gold); }
+    .chat-inp::placeholder { color:var(--t3); }
+    .chat-send-btn { width:40px;height:40px;background:var(--gold);border:none;border-radius:var(--r-md);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);color:var(--black);font-weight:700; }
+    .chat-send-btn:hover { background:var(--gold-lt); }
+    .chat-send-btn:disabled { opacity:0.4;cursor:not-allowed; }
+
+    /* Sugerencias rápidas */
+    .sugerencias { display:flex;gap:6px;flex-wrap:wrap;margin-top:10px; }
+    .sug { font-family:var(--ui);font-size:12px;padding:5px 12px;border-radius:var(--pill);border:1px solid var(--border);background:var(--elevated);color:var(--t2);cursor:pointer;transition:all var(--t-fast); }
+    .sug:hover { border-color:var(--gold);color:var(--gold);background:var(--gold-faint); }
+
+    /* Panel derecho */
+    .gamery-right { position:sticky;top:88px; }
+
+    /* Stats de Gamery */
+    .gamery-stats { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:14px; }
+    .gs-item { display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border); }
+    .gs-item:last-child { border-bottom:none; }
+    .gs-label { font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:0.08em; }
+    .gs-val   { font-family:var(--display);font-size:16px;font-weight:700; }
+
+    /* Retos arbitrados */
+    .arbitraje-item { display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-md);background:var(--elevated);margin-bottom:6px; }
+    .arb-result { width:28px;height:28px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0; }
+    .arb-info { flex:1;min-width:0; }
+    .arb-name { font-family:var(--ui);font-size:12px;font-weight:600; }
+    .arb-meta { font-family:var(--mono);font-size:9px;color:var(--t3); }
+    .arb-conf { font-family:var(--mono);font-size:10px; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-left:8px">/ Gamery IA</div>
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
+    <a href="perfil.html" class="nav-avatar" id="nav-avatar">GP</a>
+  </div>
+</nav>
+
+<div class="app-shell" style="grid-template-rows:auto">
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <a href="feed.html"   class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Arena</span></a>
+    <a href="perfil.html" class="sidebar-item"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+    <a href="retos.html"  class="sidebar-item"><span class="sidebar-icon">🏆</span><span class="sidebar-label">Mis Retos</span></a>
+    <a href="wallet.html" class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+    <div class="sidebar-section">Mercado</div>
+    <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+    <div class="sidebar-section">Ayuda</div>
+    <a href="gamery.html" class="sidebar-item active"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+  </nav>
+
+  <main class="main-content">
+    <div class="gamery-layout">
+
+      <!-- Chat principal -->
+      <div>
+        <!-- Hero -->
+        <div class="gamery-hero">
+          <div class="gamery-avatar-hero">🤖</div>
+          <div>
+            <div class="gamery-title">Gamery</div>
+            <div class="gamery-subtitle">
+              <span class="gamery-online-dot"></span>Online · Árbitro IA de GP · Responde en todos los idiomas
+            </div>
+            <div class="gamery-caps">
+              <span class="cap-badge badge-gold">⚖️ Arbitraje</span>
+              <span class="cap-badge badge-cyan">📸 Análisis de evidencia</span>
+              <span class="cap-badge badge-green">📅 Logística</span>
+              <span class="cap-badge badge-purple">🌍 Multiidioma</span>
+              <span class="cap-badge badge-muted">🛡️ Anti-fraude</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="chat-card">
+          <div class="chat-header-gm">
+            <div class="chat-header-av">🤖</div>
+            <div>
+              <div style="font-family:var(--display);font-size:14px;font-weight:700">Gamery</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--green)" id="gamery-status-txt">● Online · listo para ayudarte</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearChat()">🗑️ Limpiar</button>
+          </div>
+
+          <div class="chat-body" id="chat-body"></div>
+
+          <div class="chat-footer">
+            <div class="chat-input-row">
+              <input class="chat-inp" id="chat-input" placeholder="Pregúntale algo a Gamery..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}">
+              <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">→</button>
+            </div>
+            <div class="sugerencias" id="sugerencias"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel derecho -->
+      <div class="gamery-right">
+
+        <!-- Stats -->
+        <div class="rp-title">Estadísticas de Gamery</div>
+        <div class="gamery-stats">
+          <div class="gs-item">
+            <span class="gs-label">Retos arbitrados</span>
+            <span class="gs-val text-gold" id="stat-arbitrados">1.247</span>
+          </div>
+          <div class="gs-item">
+            <span class="gs-label">Resolución automática</span>
+            <span class="gs-val text-green">98.2%</span>
+          </div>
+          <div class="gs-item">
+            <span class="gs-label">Tiempo promedio</span>
+            <span class="gs-val text-cyan">4.3 seg</span>
+          </div>
+          <div class="gs-item">
+            <span class="gs-label">Fraudes detectados</span>
+            <span class="gs-val text-red">23</span>
+          </div>
+          <div class="gs-item">
+            <span class="gs-label">Modelo</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--t3)">Claude 4</span>
+          </div>
+        </div>
+
+        <!-- Últimas decisiones -->
+        <div class="rp-title">Últimas decisiones</div>
+        <div id="ultimas-decisiones">
+          <div class="arbitraje-item">
+            <div class="arb-result" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2)">🏆</div>
+            <div class="arb-info">
+              <div class="arb-name">ProGamer vs ElClasico</div>
+              <div class="arb-meta">eFootball · hace 3 min</div>
+            </div>
+            <div class="arb-conf text-green">99%</div>
+          </div>
+          <div class="arbitraje-item">
+            <div class="arb-result" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2)">🏆</div>
+            <div class="arb-info">
+              <div class="arb-name">SnipeMaster vs NightLord</div>
+              <div class="arb-meta">CS2 · hace 18 min</div>
+            </div>
+            <div class="arb-conf text-green">97%</div>
+          </div>
+          <div class="arbitraje-item">
+            <div class="arb-result" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.2)">⚠️</div>
+            <div class="arb-info">
+              <div class="arb-name">RocketKing vs ArenaMaster</div>
+              <div class="arb-meta">Rocket · hace 1h · Disputa</div>
+            </div>
+            <div class="arb-conf text-red">41%</div>
+          </div>
+          <div class="arbitraje-item">
+            <div class="arb-result" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2)">🏆</div>
+            <div class="arb-info">
+              <div class="arb-name">FootballGod vs NightHunter</div>
+              <div class="arb-meta">eFootball · hace 2h</div>
+            </div>
+            <div class="arb-conf text-green">100%</div>
+          </div>
+        </div>
+
+        <!-- Cómo funciona -->
+        <div class="rp-title" style="margin-top:16px">¿Cómo funciona?</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5">Los jugadores suben el screenshot del resultado</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5">Gamery analiza marcador, usuarios y autenticidad</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5">Si coinciden: escrow liberado en segundos</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--border);color:var(--t3);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+              <div style="font-size:12px;color:var(--t3);line-height:1.5">Si hay disputa: revisión manual del equipo GP</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /gamery-right -->
+
+    </div><!-- /gamery-layout -->
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  const SUGERENCIAS_INIT = [
+    '¿Cómo funciona el escrow?',
+    '¿Cuándo puedo hacer mi IPO?',
+    '¿Cómo subo evidencia de un reto?',
+    '¿Qué es GP Coin?',
+    'Analiza mi perfil',
+    '¿Cuáles son las reglas de apuestas?',
+  ];
+
+  let historial = [];
+  let isTyping = false;
+  const myUser = Auth.getUser();
+
+  // Mensaje inicial de Gamery
+  const MSG_BIENVENIDA = `¡Hola${myUser ? ` <strong>${myUser.username}</strong>` : ''}! Soy **Gamery**, el árbitro IA de GP. Puedo ayudarte con:\n\n• 🎮 Reglas y mecánicas de los retos\n• 🪙 GP Coin y pagos\n• 📈 Mercado bursátil de jugadores\n• ⚖️ Cómo funciona el arbitraje\n• 📅 Coordinar fechas de retos\n\n¿En qué te puedo ayudar hoy?`;
+
+  function init() {
+    addMessage(MSG_BIENVENIDA, 'bot');
+    buildSugerencias(SUGERENCIAS_INIT);
+    checkGameryStatus();
+    initNavbar();
+  }
+
+  function addMessage(text, role) {
+    const body = document.getElementById('chat-body');
+    const div = document.createElement('div');
+    div.className = `msg ${role === 'bot' ? 'bot' : 'user'}`;
+
+    const av = document.createElement('div');
+    av.className = `msg-av ${role === 'bot' ? 'bot' : 'user'}`;
+    av.textContent = role === 'bot' ? '🤖' : initials(myUser?.username || 'GP');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/•/g, '<br>•')
+      .replace(/\n/g, '<br>');
+
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.appendChild(bubble);
+    wrapper.appendChild(time);
+
+    div.appendChild(av);
+    div.appendChild(wrapper);
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+
+    historial.push({ role: role === 'bot' ? 'assistant' : 'user', content: text });
+  }
+
+  function showTyping() {
+    const body = document.getElementById('chat-body');
+    const div = document.createElement('div');
+    div.id = 'typing-indicator';
+    div.className = 'msg bot';
+    div.innerHTML = `<div class="msg-av bot">🤖</div><div class="msg-bubble typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function buildSugerencias(sugs) {
+    document.getElementById('sugerencias').innerHTML = sugs.map(s =>
+      `<button class="sug" onclick="sendSugerencia('${s}')">${s}</button>`
+    ).join('');
+  }
+
+  function sendSugerencia(text) {
+    document.getElementById('chat-input').value = text;
+    sendMessage();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text || isTyping) return;
+    input.value = '';
+    isTyping = true;
+
+    addMessage(text, 'user');
+    document.getElementById('sugerencias').innerHTML = '';
+
+    const btn = document.getElementById('send-btn');
+    btn.disabled = true;
+    showTyping();
+    document.getElementById('gamery-status-txt').textContent = '● Escribiendo...';
+
+    try {
+      const res = await API.gamery.chat(text, historial.slice(-10), null);
+      removeTyping();
+      addMessage(res.respuesta, 'bot');
+
+      // Sugerencias contextuales según la respuesta
+      const followUps = getFollowUps(text);
+      if (followUps.length) buildSugerencias(followUps);
+
+    } catch {
+      removeTyping();
+      addMessage('No pude conectarme al servidor en este momento. Intenta de nuevo en unos segundos.', 'bot');
+    }
+
+    isTyping = false;
+    btn.disabled = false;
+    document.getElementById('gamery-status-txt').textContent = '● Online · listo para ayudarte';
+  }
+
+  function getFollowUps(msg) {
+    const m = msg.toLowerCase();
+    if (m.includes('escrow') || m.includes('dinero') || m.includes('gpc')) {
+      return ['¿Cómo recargar GPC?', '¿Cuándo se libera el escrow?', '¿Cuál es la comisión de GP?'];
+    }
+    if (m.includes('reto') || m.includes('match')) {
+      return ['¿Cómo subir evidencia?', '¿Qué pasa si hay disputa?', '¿Puedo cancelar un reto?'];
+    }
+    if (m.includes('ipo') || m.includes('acción') || m.includes('bolsa')) {
+      return ['¿Cuántos retos necesito para el IPO?', '¿Cómo se calcula el precio de la acción?'];
+    }
+    return ['¿Algo más en lo que pueda ayudarte?'];
+  }
+
+  function clearChat() {
+    historial = [];
+    document.getElementById('chat-body').innerHTML = '';
+    addMessage(MSG_BIENVENIDA, 'bot');
+    buildSugerencias(SUGERENCIAS_INIT);
+  }
+
+  async function checkGameryStatus() {
+    try {
+      const status = await API.gamery.estado();
+      if (status.gamery === 'online') {
+        document.getElementById('gamery-status-txt').textContent = `● Online · ${status.capacidades?.length || 6} capacidades activas`;
+      }
+    } catch {}
+  }
+
+  init();
+</script>
+</body>
+</html>

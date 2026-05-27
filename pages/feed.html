@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Arena | Matchmaking</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    /* ── Filtros ── */
+    .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+
+    .chip {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:6px 14px; border-radius:var(--pill);
+      font-family:var(--ui); font-size:12px; font-weight:600;
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--t2); cursor:pointer; transition:all var(--t-fast);
+      white-space:nowrap;
+    }
+
+    .chip:hover { border-color:var(--muted); color:var(--t1); }
+    .chip.active { background:var(--gold-faint); border-color:rgba(240,180,41,0.3); color:var(--gold); }
+    .chip-sep { width:1px; height:20px; background:var(--border); }
+
+    /* ── Sección header ── */
+    .section-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .section-title { font-family:var(--display); font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; }
+    .live-dot { width:7px; height:7px; background:var(--cyan); border-radius:50%; animation:blink 1.5s infinite; display:inline-block; }
+    .see-all { font-family:var(--mono); font-size:10px; color:var(--t3); letter-spacing:0.1em; cursor:pointer; text-decoration:none; }
+    .see-all:hover { color:var(--gold); }
+
+    /* ── Swipe stack ── */
+    .swipe-area {
+      position:relative; height:400px;
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:14px;
+    }
+
+    .swipe-card {
+      position:absolute; width:100%; max-width:460px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      user-select:none;
+    }
+
+    .card-front { z-index:3; cursor:grab; }
+    .card-front:active { cursor:grabbing; }
+    .card-back1 { z-index:2; transform:translateY(10px) scale(0.96); pointer-events:none; opacity:0.6; }
+    .card-back2 { z-index:1; transform:translateY(20px) scale(0.92); pointer-events:none; opacity:0.3; }
+
+    .swipe-right { transform:translateX(130%) rotate(12deg) !important; transition:transform 0.38s ease !important; }
+    .swipe-left  { transform:translateX(-130%) rotate(-12deg) !important; transition:transform 0.38s ease !important; }
+
+    /* Card banner */
+    .card-banner {
+      height:120px; position:relative; overflow:hidden;
+      background:linear-gradient(135deg,#0d1117,#161b22,#1a1f2e);
+    }
+
+    .card-game-tag {
+      position:absolute; top:10px; left:12px;
+      font-family:var(--mono); font-size:9px; letter-spacing:0.12em;
+      text-transform:uppercase; color:var(--t3);
+      background:rgba(0,0,0,0.6); border-radius:6px; padding:3px 8px;
+    }
+
+    .card-live-tag {
+      position:absolute; top:10px; right:12px;
+      display:flex; align-items:center; gap:5px;
+      font-family:var(--mono); font-size:9px; color:var(--cyan);
+      background:var(--cyan-faint); border:1px solid rgba(0,229,255,0.2);
+      border-radius:var(--pill); padding:3px 8px;
+    }
+
+    .card-bg-text {
+      position:absolute; right:-15px; bottom:-20px;
+      font-size:90px; opacity:0.04; font-weight:900;
+      font-family:var(--display); pointer-events:none;
+    }
+
+    /* PvP */
+    .pvp { display:flex; align-items:flex-start; gap:0; padding:14px 14px 0; }
+    .pvp-player { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; }
+
+    .pvp-av {
+      width:54px; height:54px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--display); font-size:18px; font-weight:800;
+      position:relative; border:2px solid;
+    }
+
+    .pvp-av-ring {
+      position:absolute; inset:-5px; border-radius:50%;
+      border:1.5px solid; animation:ring-pulse 2s infinite;
+    }
+
+    @keyframes ring-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0} }
+
+    .pvp-you { background:var(--elevated) !important; border:2px dashed var(--border) !important; color:var(--t3) !important; font-size:22px; }
+    .pvp-name { font-family:var(--display); font-size:13px; font-weight:700; text-align:center; }
+    .pvp-tag  { font-family:var(--mono); font-size:9px; color:var(--t3); text-align:center; }
+    .pvp-vs   { font-family:var(--display); font-size:16px; font-weight:800; color:var(--red); padding:0 10px; margin-top:16px; flex-shrink:0; }
+
+    .pvp-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; width:100%; margin-top:4px; }
+    .pvp-stat  { background:var(--elevated); border-radius:6px; padding:5px 4px; text-align:center; }
+    .pvp-stat-v { font-family:var(--display); font-size:13px; font-weight:700; line-height:1; }
+    .pvp-stat-l { font-family:var(--mono); font-size:8px; color:var(--t3); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
+
+    /* Card body */
+    .card-body { padding:12px 14px 14px; }
+
+    .monto-row {
+      display:flex; justify-content:space-between; align-items:center;
+      background:var(--elevated); border-radius:10px; padding:10px 13px; margin-bottom:10px;
+    }
+
+    .monto-gpc { font-family:var(--display); font-size:20px; font-weight:700; color:var(--gold); }
+    .monto-usd { font-family:var(--mono); font-size:9px; color:var(--t3); margin-top:2px; }
+
+    .odds-label { font-family:var(--mono); font-size:9px; color:var(--t3); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px; }
+    .odds-row { display:flex; gap:5px; justify-content:flex-end; }
+    .odds-chip { font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:6px; }
+    .odds-j1 { background:var(--gold-faint); color:var(--gold); border:1px solid rgba(240,180,41,0.2); }
+    .odds-j2 { background:var(--cyan-faint); color:var(--cyan); border:1px solid rgba(0,229,255,0.15); }
+
+    /* Swipe buttons */
+    .swipe-btns { display:flex; gap:8px; }
+
+    .btn-pass  { flex:1; padding:10px; border-radius:10px; background:transparent; border:1px solid var(--muted); color:var(--t2); font-family:var(--ui); font-size:12px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; transition:all var(--t-fast); }
+    .btn-pass:hover  { border-color:var(--red); color:var(--red); }
+    .btn-super { width:40px; height:40px; border-radius:10px; background:transparent; border:1px solid var(--cyan); color:var(--cyan); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all var(--t-fast); }
+    .btn-super:hover { background:var(--cyan-faint); }
+    .btn-reto  { flex:1; padding:10px; border-radius:10px; background:var(--gold); border:none; color:var(--black); font-family:var(--ui); font-size:13px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; transition:all var(--t-fast); }
+    .btn-reto:hover { background:var(--gold-lt); }
+
+    /* Dots */
+    .swipe-dots { display:flex; justify-content:center; gap:6px; margin-bottom:12px; }
+    .dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:all 0.2s; }
+    .dot.active { background:var(--gold); width:18px; border-radius:var(--pill); }
+
+    /* Lista de retos */
+    .reto-item {
+      display:flex; align-items:center; gap:10px;
+      background:var(--surface); border:1px solid var(--border);
+      border-left:3px solid var(--border);
+      border-radius:12px; padding:12px; cursor:pointer;
+      transition:all var(--t-fast); margin-bottom:6px;
+    }
+
+    .reto-item.live   { border-left-color:var(--cyan); }
+    .reto-item.hot    { border-left-color:var(--gold); }
+    .reto-item.open   { border-left-color:var(--muted); }
+    .reto-item:hover  { border-color:var(--muted); transform:translateX(2px); }
+
+    .ri-avs { display:flex; }
+    .ri-av  { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:12px; font-weight:800; border:2px solid var(--surface); }
+    .ri-av-empty { background:var(--elevated) !important; color:var(--t3); border:2px dashed var(--border); }
+    .ri-names { font-family:var(--ui); font-size:13px; font-weight:600; }
+    .ri-meta  { font-family:var(--mono); font-size:9px; color:var(--t3); margin-top:2px; letter-spacing:0.06em; }
+    .ri-monto { font-family:var(--display); font-size:15px; font-weight:700; color:var(--gold); text-align:right; }
+
+    /* Right panel */
+    .right-panel {
+      position:sticky; top:60px;
+      width:270px; flex-shrink:0;
+    }
+
+    /* Layout feed: main + right */
+    .feed-layout { display:flex; gap:24px; }
+    .feed-center { flex:1; min-width:0; }
+
+    .wallet-mini {
+      background:var(--gold-faint); border:1px solid rgba(240,180,41,0.15);
+      border-radius:14px; padding:16px; margin-bottom:16px;
+    }
+
+    .wm-label { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:4px; }
+    .wm-amount { font-family:var(--display); font-size:28px; font-weight:800; color:var(--gold); line-height:1; }
+    .wm-usd { font-family:var(--mono); font-size:10px; color:var(--t3); margin-top:4px; }
+
+    .rp-title { font-family:var(--mono); font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:var(--t3); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+    .rp-title::before { content:''; width:14px; height:1px; background:var(--gold); }
+
+    .top-item { display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px; cursor:pointer; transition:background var(--t-fast); margin-bottom:2px; }
+    .top-item:hover { background:var(--elevated); }
+    .top-rank { font-family:var(--mono); font-size:11px; width:16px; text-align:center; flex-shrink:0; }
+    .top-av   { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:10px; font-weight:800; flex-shrink:0; }
+    .top-name { font-family:var(--ui); font-size:12px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .top-price { font-family:var(--mono); font-size:11px; color:var(--gold); }
+    .top-chg   { font-family:var(--mono); font-size:9px; text-align:right; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <input class="nav-search" placeholder="Buscar jugadores, juegos...">
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet">
+      <span class="wallet-dot"></span><span>— GPC</span>
+    </a>
+    <a href="#" class="nav-btn" title="Notificaciones">🔔<span class="badge">3</span></a>
+    <a href="#" class="nav-btn" id="nav-avatar-btn" title="Perfil">👤</a>
+  </div>
+</nav>
+
+<div class="app-shell" style="grid-template-rows:auto">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <a href="feed.html"   class="sidebar-item active"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Arena</span></a>
+    <a href="perfil.html" class="sidebar-item"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+    <a href="retos.html"  class="sidebar-item"><span class="sidebar-icon">🏆</span><span class="sidebar-label">Mis Retos</span><span class="sidebar-badge" id="retos-badge">—</span></a>
+    <a href="wallet.html" class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+    <div class="sidebar-section">Mercado</div>
+    <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+    <div class="sidebar-section">Social</div>
+    <a href="#"           class="sidebar-item"><span class="sidebar-icon">👁️</span><span class="sidebar-label">En Vivo</span></a>
+    <a href="#"           class="sidebar-item"><span class="sidebar-icon">🏅</span><span class="sidebar-label">Ranking</span></a>
+    <div class="sidebar-section">Ayuda</div>
+    <a href="gamery.html" class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="feed-layout">
+
+      <!-- Centro -->
+      <div class="feed-center">
+
+        <!-- Filtros -->
+        <div class="filters">
+          <button class="chip active" onclick="filtrar('',this)">🎮 Todos</button>
+          <button class="chip" onclick="filtrar('eFootball 2025',this)">⚽ eFootball</button>
+          <button class="chip" onclick="filtrar('Counter-Strike 2',this)">🔫 CS2</button>
+          <button class="chip" onclick="filtrar('Rocket League',this)">🚀 Rocket</button>
+          <button class="chip" onclick="filtrar('Fortnite',this)">🌪️ Fortnite</button>
+          <div class="chip-sep"></div>
+          <button class="chip">🪙 50–500 GPC</button>
+          <button class="chip">🌍 Mi país</button>
+        </div>
+
+        <!-- Matchmaking -->
+        <div class="section-hdr">
+          <div class="section-title"><span class="live-dot"></span>Matchmaking</div>
+          <span class="see-all" id="cards-counter">Cargando...</span>
+        </div>
+
+        <div class="swipe-area" id="swipe-area">
+          <!-- Back cards -->
+          <div class="swipe-card card-back2" id="card-back2"></div>
+          <div class="swipe-card card-back1" id="card-back1"></div>
+
+          <!-- Front card -->
+          <div class="swipe-card card-front" id="card-front">
+            <div class="card-banner">
+              <span class="card-game-tag" id="cf-game">Cargando...</span>
+              <span class="card-live-tag"><span class="live-dot"></span>Disponible ahora</span>
+              <span class="card-bg-text" id="cf-emoji">🎮</span>
+            </div>
+
+            <div class="pvp">
+              <div class="pvp-player">
+                <div class="pvp-av" id="cf-av1" style="background:linear-gradient(135deg,var(--gold),var(--gold-dim));border-color:var(--gold);color:var(--black)">
+                  <div class="pvp-av-ring" style="border-color:rgba(240,180,41,0.4)"></div>
+                  <span id="cf-initials1">—</span>
+                </div>
+                <div class="pvp-name" id="cf-name1">—</div>
+                <div class="pvp-tag" id="cf-tag1">—</div>
+                <div class="pvp-stats">
+                  <div class="pvp-stat"><div class="pvp-stat-v text-gold" id="cf-wr1">—</div><div class="pvp-stat-l">WR</div></div>
+                  <div class="pvp-stat"><div class="pvp-stat-v text-cyan" id="cf-retos1">—</div><div class="pvp-stat-l">Retos</div></div>
+                  <div class="pvp-stat"><div class="pvp-stat-v" id="cf-odds1">—</div><div class="pvp-stat-l">Odds</div></div>
+                </div>
+              </div>
+
+              <div class="pvp-vs">VS</div>
+
+              <div class="pvp-player">
+                <div class="pvp-av pvp-you">🎮</div>
+                <div class="pvp-name text-muted">Tú</div>
+                <div class="pvp-tag">Tu username</div>
+                <div class="pvp-stats">
+                  <div class="pvp-stat"><div class="pvp-stat-v text-faint">—</div><div class="pvp-stat-l">WR</div></div>
+                  <div class="pvp-stat"><div class="pvp-stat-v text-faint">—</div><div class="pvp-stat-l">Retos</div></div>
+                  <div class="pvp-stat"><div class="pvp-stat-v text-faint">—</div><div class="pvp-stat-l">Odds</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="monto-row">
+                <div>
+                  <div class="monto-gpc" id="cf-monto">— GPC</div>
+                  <div class="monto-usd" id="cf-usd">≈ $0.00 USD</div>
+                </div>
+                <div>
+                  <div class="odds-label">Odds actuales</div>
+                  <div class="odds-row">
+                    <span class="odds-chip odds-j1" id="cf-odds-j1">—</span>
+                    <span class="odds-chip odds-j2" id="cf-odds-j2">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="swipe-btns">
+                <button class="btn-pass"  onclick="swipeCard('left')">✕ Pasar</button>
+                <button class="btn-super" onclick="swipeCard('right')">⚡</button>
+                <button class="btn-reto"  onclick="aceptarReto()">Retar →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div id="empty-state" style="display:none;text-align:center;padding:40px 20px">
+            <div style="font-size:48px;margin-bottom:12px">🎮</div>
+            <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:8px">Sin más oponentes</div>
+            <div class="text-muted" style="margin-bottom:20px">Cambia los filtros o vuelve más tarde</div>
+            <button class="btn btn-primary" onclick="loadFeed()">Recargar feed</button>
+          </div>
+        </div>
+
+        <!-- Dots -->
+        <div class="swipe-dots" id="swipe-dots"></div>
+
+        <!-- Lista de retos en vivo -->
+        <div class="section-hdr">
+          <div class="section-title"><span class="live-dot"></span>En vivo y abiertos</div>
+          <a href="retos.html" class="see-all">Ver todos →</a>
+        </div>
+
+        <div id="retos-lista">
+          <div style="text-align:center;padding:30px;color:var(--t3)">
+            <div class="loading-spinner" style="margin:0 auto 12px"></div>
+            Cargando retos...
+          </div>
+        </div>
+
+      </div><!-- /feed-center -->
+
+      <!-- Right panel -->
+      <div class="right-panel">
+        <div class="wallet-mini">
+          <div class="wm-label">Tu wallet</div>
+          <div class="wm-amount" id="rp-saldo">—</div>
+          <div class="wm-usd" id="rp-usd">GPC · ≈ $0.00 USD</div>
+          <a href="wallet.html" class="btn btn-primary btn-sm btn-full mt-4">🪙 Recargar GPC</a>
+        </div>
+
+        <div class="rp-title">Top · Bolsa GP</div>
+        <div id="top-jugadores">
+          <div style="color:var(--t3);font-family:var(--mono);font-size:10px;padding:8px">Cargando...</div>
+        </div>
+      </div>
+
+    </div><!-- /feed-layout -->
+  </main>
+
+</div><!-- /app-shell -->
+
+<!-- Gamery FAB -->
+<button class="gamery-fab" onclick="window.location.href='gamery.html'" title="Hablar con Gamery">
+  🤖<div class="gamery-fab-pulse"></div>
+</button>
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  // ── Estado ────────────────────────────────────────────────────
+  let cards = [];
+  let cardIdx = 0;
+  let filtroJuego = '';
+  let dragStartX = 0;
+  let isDragging = false;
+
+  // Datos mock para demo
+  const MOCK_CARDS = [
+    { id:'1', j1_username:'ProGamer_CO',    j1_winrate:87.3, j1_nivel:24, j1_pais:'🇨🇴', nombre_juego:'eFootball 2025',   modalidad:'1v1',        monto_apuesta:500,  odds_j1:1.85, odds_j2:1.95 },
+    { id:'2', j1_username:'SnipeMaster_AR', j1_winrate:82,   j1_nivel:18, j1_pais:'🇦🇷', nombre_juego:'Counter-Strike 2', modalidad:'Deathmatch', monto_apuesta:1000, odds_j1:1.72, odds_j2:2.10 },
+    { id:'3', j1_username:'RocketKing_BR',  j1_winrate:78,   j1_nivel:15, j1_pais:'🇧🇷', nombre_juego:'Rocket League',    modalidad:'1v1',        monto_apuesta:300,  odds_j1:1.90, odds_j2:1.90 },
+    { id:'4', j1_username:'NightHunter_CL', j1_winrate:64,   j1_nivel:10, j1_pais:'🇨🇱', nombre_juego:'Fortnite',         modalidad:'Solo',       monto_apuesta:200,  odds_j1:2.10, odds_j2:1.72 },
+    { id:'5', j1_username:'FootballGod_PE', j1_winrate:89,   j1_nivel:30, j1_pais:'🇵🇪', nombre_juego:'eFootball 2025',   modalidad:'Champions',  monto_apuesta:2000, odds_j1:1.55, odds_j2:2.45 },
+  ];
+
+  const MOCK_RETOS = [
+    { j1:'SnipeMaster_AR', j2:'RocketKing_BR', juego:'CS2',            monto:2000, estado:'live', espectadores:1247 },
+    { j1:'FootballGod_PE', j2:'NightLord_CL',  juego:'eFootball',      monto:5000, estado:'hot',  espectadores:847  },
+    { j1:'ElClasico_MX',   j2:null,            juego:'Rocket League',  monto:300,  estado:'open', espectadores:0    },
+    { j1:'ArenaMaster_CO', j2:null,            juego:'Fortnite',       monto:150,  estado:'open', espectadores:0    },
+  ];
+
+  const TOP_MOCK = [
+    { name:'FootballGod_PE', av:'FG', color:'linear-gradient(135deg,#b388ff,#7c4dff)', tc:'#fff', price:'89.1', chg:'+19.2%', up:true },
+    { name:'SnipeMaster_AR', av:'SM', color:'linear-gradient(135deg,#ff3d57,#b71c1c)', tc:'#fff', price:'67.8', chg:'+12.3%', up:true },
+    { name:'ProGamer_CO',    av:'PG', color:'linear-gradient(135deg,#f0b429,#c4911a)', tc:'#000', price:'48.5', chg:'+8.4%',  up:true },
+    { name:'RocketKing_BR', av:'RK', color:'linear-gradient(135deg,#00e5ff,#0096aa)', tc:'#000', price:'22.4', chg:'+4.7%',  up:true },
+    { name:'ElClasico_MX',  av:'EK', color:'linear-gradient(135deg,#ff3d57,#880000)', tc:'#fff', price:'31.2', chg:'-2.1%',  up:false},
+  ];
+
+  const EMOJIS = { 'eFootball 2025':'⚽', 'Counter-Strike 2':'🔫', 'Rocket League':'🚀', 'Fortnite':'🌪️', 'Dota 2':'⚔️', 'Fall Guys':'👑' };
+
+  // ── Load ──────────────────────────────────────────────────────
+  async function loadFeed() {
+    try {
+      const data = await API.retos.feed({ juego: filtroJuego || undefined, limit: 20 });
+      cards = data;
+    } catch {
+      cards = filtroJuego
+        ? MOCK_CARDS.filter(c => c.nombre_juego === filtroJuego)
+        : MOCK_CARDS;
+    }
+    cardIdx = 0;
+    renderCard();
+    buildDots();
+  }
+
+  async function loadWallet() {
+    try {
+      const w = await API.wallet.get();
+      document.getElementById('rp-saldo').textContent = GPC.format(w.saldo_gpc);
+      document.getElementById('rp-usd').textContent   = `GPC · ≈ ${GPC.toUSD(w.saldo_gpc)}`;
+      document.getElementById('nav-wallet').innerHTML  = `<span class="wallet-dot"></span>${GPC.format(w.saldo_gpc)}`;
+    } catch {}
+  }
+
+  async function loadRetosLista() {
+    let html = '';
+    const AV_COLORS = ['linear-gradient(135deg,#f0b429,#c4911a)','linear-gradient(135deg,#00e5ff,#0096aa)','linear-gradient(135deg,#b388ff,#7c4dff)','linear-gradient(135deg,#ff3d57,#b71c1c)'];
+    MOCK_RETOS.forEach((r, i) => {
+      const badge = r.estado === 'live'
+        ? `<span class="badge badge-live">● En vivo</span>`
+        : r.estado === 'hot'
+        ? `<span class="badge badge-gold">🔥 Top</span>`
+        : `<span class="badge badge-muted">Abierto</span>`;
+
+      html += `
+        <div class="reto-item ${r.estado}" onclick="window.location.href='reto-detalle.html?id=${i}'">
+          <div class="ri-avs">
+            <div class="ri-av" style="background:${AV_COLORS[i % AV_COLORS.length]};color:${i%2===0?'#000':'#fff'}">${r.j1.slice(0,2)}</div>
+            ${r.j2
+              ? `<div class="ri-av" style="background:${AV_COLORS[(i+2)%4]};color:#fff;margin-left:-10px">${r.j2.slice(0,2)}</div>`
+              : `<div class="ri-av ri-av-empty" style="margin-left:-10px">?</div>`
+            }
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ri-names">
+              ${r.j1} ${r.j2 ? `<span style="color:var(--red);font-size:11px">VS</span> ${r.j2}` : `<span class="text-faint" style="font-size:11px">busca oponente</span>`}
+            </div>
+            <div class="ri-meta">${EMOJIS[r.juego]||'🎮'} ${r.juego}${r.espectadores ? ` · ${r.espectadores.toLocaleString()} esp.` : ''}</div>
+          </div>
+          <div>
+            <div class="ri-monto">${GPC.format(r.monto)}</div>
+            <div style="text-align:right;margin-top:3px">${badge}</div>
+          </div>
+        </div>`;
+    });
+    document.getElementById('retos-lista').innerHTML = html;
+  }
+
+  function loadTopJugadores() {
+    document.getElementById('top-jugadores').innerHTML = TOP_MOCK.map((p, i) => `
+      <div class="top-item" onclick="window.location.href='perfil.html?u=${p.name}'">
+        <span class="top-rank" style="color:${i<3?'var(--gold)':'var(--t3)'}">${i+1}</span>
+        <div class="top-av" style="background:${p.color};color:${p.tc}">${p.av}</div>
+        <div style="flex:1;min-width:0">
+          <div class="top-name">${p.name}</div>
+        </div>
+        <div>
+          <div class="top-price">${p.price} GPC</div>
+          <div class="top-chg" style="color:${p.up?'var(--green)':'var(--red)'}">${p.chg}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Render card ────────────────────────────────────────────────
+  function renderCard() {
+    if (cardIdx >= cards.length) {
+      document.getElementById('card-front').style.display = 'none';
+      document.getElementById('card-back1').style.display = 'none';
+      document.getElementById('card-back2').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'block';
+      document.getElementById('cards-counter').textContent = 'Sin más oponentes';
+      return;
+    }
+
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('card-front').style.display = 'block';
+
+    const c = cards[cardIdx];
+    const emoji = EMOJIS[c.nombre_juego] || '🎮';
+
+    document.getElementById('cf-game').textContent     = `${emoji} ${c.nombre_juego} · ${c.modalidad}`;
+    document.getElementById('cf-emoji').textContent    = emoji;
+    document.getElementById('cf-initials1').textContent= initials(c.j1_username || '');
+    document.getElementById('cf-name1').textContent    = c.j1_username || '—';
+    document.getElementById('cf-tag1').textContent     = `${c.j1_pais || '🌍'} · Nv.${c.j1_nivel || '—'}`;
+    document.getElementById('cf-wr1').textContent      = c.j1_winrate ? `${c.j1_winrate.toFixed(0)}%` : '—';
+    document.getElementById('cf-retos1').textContent   = c.apuestas_count || c.j1_nivel * 5 || '—';
+    document.getElementById('cf-odds1').textContent    = c.odds_j1 ? `${Number(c.odds_j1).toFixed(2)}x` : '—';
+    document.getElementById('cf-monto').textContent    = GPC.format(c.monto_apuesta);
+    document.getElementById('cf-usd').textContent      = `≈ ${GPC.toUSD(c.monto_apuesta)}`;
+    document.getElementById('cf-odds-j1').textContent  = c.odds_j1 ? Number(c.odds_j1).toFixed(2) : '2.00';
+    document.getElementById('cf-odds-j2').textContent  = c.odds_j2 ? Number(c.odds_j2).toFixed(2) : '2.00';
+    document.getElementById('cards-counter').textContent = `${cardIdx+1} de ${cards.length} oponentes`;
+    updateDots();
+  }
+
+  // ── Swipe ─────────────────────────────────────────────────────
+  function swipeCard(dir) {
+    const el = document.getElementById('card-front');
+    el.classList.add(dir === 'right' ? 'swipe-right' : 'swipe-left');
+    setTimeout(() => {
+      el.classList.remove('swipe-right','swipe-left');
+      el.style.transform = '';
+      cardIdx++;
+      renderCard();
+    }, 400);
+  }
+
+  async function aceptarReto() {
+    const card = cards[cardIdx];
+    if (!card) return;
+    try {
+      await API.retos.aceptar(card.id);
+      toast('¡Reto aceptado! Coordiná la fecha con tu oponente 📅', 'success');
+    } catch {
+      toast('Reto enviado (demo)', 'success');
+    }
+    swipeCard('right');
+  }
+
+  // Drag to swipe
+  const cardEl = document.getElementById('card-front');
+  cardEl.addEventListener('mousedown', e => { dragStartX = e.clientX; isDragging = true; });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartX;
+    cardEl.style.transform = `translateX(${dx}px) rotate(${dx * 0.04}deg)`;
+    cardEl.style.transition = 'none';
+  });
+  window.addEventListener('mouseup', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    cardEl.style.transition = '';
+    const dx = e.clientX - dragStartX;
+    if (dx > 80) swipeCard('right');
+    else if (dx < -80) swipeCard('left');
+    else cardEl.style.transform = '';
+  });
+
+  // Touch swipe
+  cardEl.addEventListener('touchstart', e => { dragStartX = e.touches[0].clientX; });
+  cardEl.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - dragStartX;
+    if (dx > 60) swipeCard('right');
+    else if (dx < -60) swipeCard('left');
+  });
+
+  // ── Dots ──────────────────────────────────────────────────────
+  function buildDots() {
+    const total = Math.min(cards.length, 6);
+    document.getElementById('swipe-dots').innerHTML =
+      Array.from({ length: total }, (_, i) => `<div class="dot${i===0?' active':''}"></div>`).join('');
+  }
+
+  function updateDots() {
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cardIdx % Math.max(1, document.querySelectorAll('.dot').length)));
+  }
+
+  // ── Filtros ───────────────────────────────────────────────────
+  function filtrar(juego, btn) {
+    filtroJuego = juego;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    loadFeed();
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  (async () => {
+    const user = Auth.getUser();
+    if (user) {
+      const navBtn = document.getElementById('nav-avatar-btn');
+      navBtn.textContent = initials(user.username);
+      navBtn.href = `perfil.html?u=${user.username}`;
+    }
+    await Promise.all([loadFeed(), loadWallet(), loadRetosLista(), loadTopJugadores()]);
+  })();
+</script>
+</body>
+</html>
