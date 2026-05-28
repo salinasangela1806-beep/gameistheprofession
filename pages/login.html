@@ -404,7 +404,7 @@
     btn.textContent = 'Creando cuenta...'; btn.disabled = true;
 
     try {
-      const session = await API.auth.registro({ email, password: pwd, username, nombre_display: nombre, pais, idioma_principal: 'es', tipo: 'retador' });
+      const session = await API.auth.registro({ email, password: pwd, username, nombre_display: nombre, pais, idioma_principal: 'es', tipo: 'retador', juego: juegazo});
       Auth.setToken(session.access_token);
       Auth.setUser(session.perfil);
       toast('¡Cuenta creada! 50 GPC acreditados 🎉', 'success');
