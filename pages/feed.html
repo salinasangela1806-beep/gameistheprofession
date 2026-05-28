@@ -378,17 +378,17 @@
   let dragStartX = 0;
   let isDragging = false;
 
-  const userrrr = Auth.getUser()
+  async function getUserData() {
+    const userrrr = Auth.getUser()
+    try {
+      const perfil = await API.usuarios.getPerfil(userrrr.username);
+    } catch {}
+    return perfil || '';
+  };
 
-  try {
-    const perfil = await API.usuarios.getPerfil(userrrr.username);
-    const juegoFav = perfil.juego || perfil.juegos?.[0]?.nombre_juego || '';
+  const nah = getUserData();
 
-    if (juegoFav) {
-      filtroJuego = juegoFav;
-      // Activar el chip correspondiente visualmente
-    }
-  } catch {}
+  filtroJuego = nah.juego || '';
 
   // Datos mock para demo
   const MOCK_CARDS = [
@@ -594,11 +594,10 @@
 
   // ── Init ──────────────────────────────────────────────────────
   (async () => {
-    const user = Auth.getUser();
-    if (user) {
+    if (nah) {
       const navBtn = document.getElementById('nav-avatar-btn');
-      navBtn.textContent = initials(user.username);
-      navBtn.href = `perfil.html?u=${user.username}`;
+      navBtn.textContent = initials(nah.username);
+      navBtn.href = `perfil.html?u=${nah.username}`;
     }
     await Promise.all([loadFeed(), loadWallet(), loadRetosLista(), loadTopJugadores()]);
   })();
