@@ -316,6 +316,12 @@
   let mediaItems = [];
   let retosHistorial = [];
 
+  async function doLogout() {
+    try { await API.auth.logout(); } catch {}
+    Auth.clearToken();
+    window.location.href = '/pages/login.html';
+  }
+
   async function loadPerfil() {
     const params = new URLSearchParams(window.location.search);
     const username = params.get('u') || Auth.getUser()?.username;
@@ -389,7 +395,9 @@
     // Botones de acción
     const actionsEl = document.getElementById('profile-actions');
     if (esMiPerfil) {
-      actionsEl.innerHTML = `<button class="btn-seguir-p" onclick="window.location.href='perfil.html'">✏️ Editar perfil</button>`;
+      actionsEl.innerHTML = `
+        <button class="btn-seguir-p" onclick="window.location.href='perfil.html'">✏️ Editar perfil</button>
+        <button class="btn-seguir-p" onclick="doLogout()" style="border-color:rgba(255,61,87,0.3);color:var(--red)">⏻ Salir</button>`;
       document.getElementById('avatar-upload-btn').style.display = 'flex';
       document.getElementById('hl-new').style.display = 'flex';
       document.getElementById('upload-cta').style.display = 'block';
