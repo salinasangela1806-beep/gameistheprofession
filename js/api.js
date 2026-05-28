@@ -197,7 +197,7 @@ async function initNavbar() {
   if (walletEl) {
     try {
       const wallet = await API.wallet.get();
-      walletEl.innerHTML = `<span class="wallet-dot"></span>${GPC.format(wallet.saldo_gpc)}`;
+      walletEl.innerHTML = `<span class="wallet-dot"></span>${GPC.format(wallet.saldo_total)}`;
     } catch {}
   }
 }
