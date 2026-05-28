@@ -378,18 +378,6 @@
   let dragStartX = 0;
   let isDragging = false;
 
-  async function getUserData() {
-    const userrrr = Auth.getUser()
-    try {
-      const perfil = await API.usuarios.getPerfil(userrrr.username);
-    } catch {}
-    return perfil || '';
-  };
-
-  const nah = getUserData();
-
-  filtroJuego = nah.juego || '';
-
   // Datos mock para demo
   const MOCK_CARDS = [
     { id:'1', j1_username:'ProGamer_CO',    j1_winrate:87.3, j1_nivel:24, j1_pais:'🇨🇴', nombre_juego:'eFootball 2025',   modalidad:'1v1',        monto_apuesta:500,  odds_j1:1.85, odds_j2:1.95 },
@@ -594,14 +582,12 @@
 
   // ── Init ──────────────────────────────────────────────────────
   (async () => {
-    if (nah) {
+    const user = Auth.getUser();
+    if (user) {
       const navBtn = document.getElementById('nav-avatar-btn');
-      navBtn.textContent = initials(nah.username);
-      navBtn.href = `perfil.html?u=${nah.username}`;
+      navBtn.textContent = initials(user.username);
+      navBtn.href = `perfil.html?u=${user.username}`;
     }
-    document.querySelectorAll('.chip').forEach(c => {
-      c.classList.toggle('active', c.textContent.trim().includes(filtroJuego));
-    });
     await Promise.all([loadFeed(), loadWallet(), loadRetosLista(), loadTopJugadores()]);
   })();
 </script>
