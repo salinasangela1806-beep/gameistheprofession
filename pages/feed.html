@@ -378,6 +378,18 @@
   let dragStartX = 0;
   let isDragging = false;
 
+  const userrrr = Auth.getUser()
+
+  try {
+    const perfil = await API.usuarios.getPerfil(userrrr.username);
+    const juegoFav = perfil.juego || perfil.juegos?.[0]?.nombre_juego || '';
+
+    if (juegoFav) {
+      filtroJuego = juegoFav;
+      // Activar el chip correspondiente visualmente
+    }
+  } catch {}
+
   // Datos mock para demo
   const MOCK_CARDS = [
     { id:'1', j1_username:'ProGamer_CO',    j1_winrate:87.3, j1_nivel:24, j1_pais:'🇨🇴', nombre_juego:'eFootball 2025',   modalidad:'1v1',        monto_apuesta:500,  odds_j1:1.85, odds_j2:1.95 },
@@ -588,20 +600,6 @@
       navBtn.textContent = initials(user.username);
       navBtn.href = `perfil.html?u=${user.username}`;
     }
-    try {
-      const perfil = await API.usuarios.getPerfil(user.username);
-      const juegoFav = perfil.juego                    // campo directo
-                    || perfil.juegos?.[0]?.nombre_juego // o primer juego del array
-                    || '';
-
-      if (juegoFav) {
-        filtroJuego = juegoFav;
-        // Activar el chip correspondiente visualmente
-        document.querySelectorAll('.chip').forEach(c => {
-          c.classList.toggle('active', c.textContent.trim().includes(juegoFav.split(' ')[0]));
-        });
-      }
-    } catch {}
     await Promise.all([loadFeed(), loadWallet(), loadRetosLista(), loadTopJugadores()]);
   })();
 </script>
