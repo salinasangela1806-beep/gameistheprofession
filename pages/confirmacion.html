@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Confirmar Reto</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    body { background:var(--black); }
+
+    /* ── Fases indicator ── */
+    .fases-bar { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:32px; }
+    .fase-step {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 20px; font-family:var(--mono); font-size:11px;
+      letter-spacing:0.08em; text-transform:uppercase;
+      background:var(--surface); border:1px solid var(--border); color:var(--t3);
+    }
+    .fase-step:first-child { border-radius:var(--pill) 0 0 var(--pill); }
+    .fase-step:last-child  { border-radius:0 var(--pill) var(--pill) 0; }
+    .fase-step.activa  { background:var(--gold-faint); border-color:rgba(240,180,41,0.4); color:var(--gold); }
+    .fase-step.done    { background:rgba(0,230,118,0.06); border-color:rgba(0,230,118,0.3); color:var(--green); }
+    .fase-sep { width:1px; height:36px; background:var(--border); flex-shrink:0; }
+
+    /* ── Fases contenido ── */
+    .fase-panel {
+      max-width: 560px; margin: 0 auto;
+      animation: slide-up 0.3s ease;
+    }
+
+    /* ── Oponente card ── */
+    .oponente-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r-xl); padding:20px; margin-bottom:16px;
+    }
+    .op-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .op-av {
+      width:60px; height:60px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--display); font-size:22px; font-weight:800; flex-shrink:0;
+    }
+    .op-name   { font-family:var(--display); font-size:20px; font-weight:700; margin-bottom:3px; }
+    .op-tag    { font-family:var(--mono); font-size:10px; color:var(--t3); }
+    .op-stats  { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .op-stat   { background:var(--elevated); border-radius:var(--r-sm); padding:8px; text-align:center; }
+    .op-stat-v { font-family:var(--display); font-size:16px; font-weight:700; line-height:1; }
+    .op-stat-l { font-family:var(--mono); font-size:8px; color:var(--t3); text-transform:uppercase; margin-top:2px; }
+
+    .historial-row { display:flex; gap:6px; margin-top:12px; align-items:center; }
+    .historial-label { font-family:var(--mono); font-size:9px; color:var(--t3); letter-spacing:0.1em; margin-right:4px; }
+    .hist-dot { width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; }
+
+    /* Análisis de Gamery */
+    .gamery-analisis {
+      background:var(--gold-faint); border:1px solid rgba(240,180,41,0.2);
+      border-radius:var(--r-lg); padding:16px; margin-bottom:16px;
+    }
+    .ga-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .ga-av { width:28px; height:28px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .ga-texto { font-size:13px; color:var(--t1); line-height:1.6; }
+
+    /* Chat de Gamery */
+    .chat-mini { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; margin-bottom:16px; }
+    .chat-msgs { padding:12px; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+    .chat-m { padding:8px 12px; border-radius:10px; font-size:13px; max-width:85%; }
+    .chat-m.bot  { background:var(--elevated); border:1px solid var(--border); align-self:flex-start; }
+    .chat-m.user { background:var(--gold-faint); border:1px solid rgba(240,180,41,0.15); align-self:flex-end; }
+    .chat-footer-mini { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border); background:var(--elevated); }
+    .sug-pills { display:flex; gap:6px; flex-wrap:wrap; padding:0 12px 10px; }
+    .sug-pill { font-family:var(--ui); font-size:11px; padding:4px 10px; border-radius:var(--pill); border:1px solid var(--border); background:var(--elevated); color:var(--t2); cursor:pointer; transition:all var(--t-fast); }
+    .sug-pill:hover { border-color:var(--gold); color:var(--gold); }
+
+    /* Resumen financiero */
+    .resumen-financiero {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r-xl); padding:20px; margin-bottom:16px;
+    }
+    .rf-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+    .rf-row:last-child { border-bottom:none; }
+    .rf-label { font-family:var(--mono); font-size:10px; color:var(--t3); letter-spacing:0.08em; text-transform:uppercase; }
+    .rf-val   { font-family:var(--display); font-size:15px; font-weight:700; }
+    .rf-saldo-wrap { background:var(--elevated); border-radius:var(--r-md); padding:12px; margin-top:12px; }
+    .rf-saldo-label { font-family:var(--mono); font-size:9px; color:var(--t3); letter-spacing:0.1em; text-transform:uppercase; }
+    .rf-saldo-barra { height:6px; background:var(--border); border-radius:var(--pill); overflow:hidden; margin:6px 0; }
+    .rf-saldo-fill  { height:100%; border-radius:var(--pill); background:linear-gradient(90deg,var(--cyan),var(--gold)); transition:width 0.5s ease; }
+
+    /* Advertencia fase 2 */
+    .advertencia-box {
+      background:rgba(240,180,41,0.06); border:2px solid rgba(240,180,41,0.3);
+      border-radius:var(--r-lg); padding:16px; margin-bottom:16px; text-align:center;
+    }
+    .adv-icon  { font-size:36px; margin-bottom:8px; }
+    .adv-title { font-family:var(--display); font-size:20px; font-weight:800; color:var(--gold); margin-bottom:6px; }
+    .adv-sub   { font-size:13px; color:var(--t2); line-height:1.6; }
+
+    /* Punto de no retorno (fase 3) */
+    .pnr-box {
+      background:rgba(255,61,87,0.06); border:2px solid rgba(255,61,87,0.35);
+      border-radius:var(--r-xl); padding:20px; margin-bottom:16px;
+    }
+    .pnr-icon  { font-size:40px; text-align:center; margin-bottom:10px; }
+    .pnr-title { font-family:var(--display); font-size:22px; font-weight:800; color:var(--red); text-align:center; margin-bottom:12px; }
+    .pnr-items { display:flex; flex-direction:column; gap:8px; }
+    .pnr-item  { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--t1); }
+    .pnr-dot   { width:6px; height:6px; border-radius:50%; background:var(--red); flex-shrink:0; margin-top:7px; }
+
+    /* Contrato sellado */
+    .contrato { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-xl); padding:20px; margin-bottom:16px; }
+    .contrato-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); }
+    .contrato-row:last-child { border-bottom:none; }
+    .ct-label { font-family:var(--mono); font-size:10px; color:var(--t3); letter-spacing:0.08em; }
+    .ct-val   { font-family:var(--ui); font-size:13px; font-weight:600; }
+
+    /* Checkbox */
+    .checkbox-row { display:flex; align-items:center; gap:10px; padding:12px; border-radius:var(--r-md); border:1px solid var(--border); margin-bottom:16px; cursor:pointer; transition:all var(--t-fast); }
+    .checkbox-row:hover { border-color:var(--gold); background:var(--gold-faint); }
+    .checkbox-row.checked { border-color:var(--green); background:rgba(0,230,118,0.04); }
+    .checkbox-box { width:20px; height:20px; border-radius:5px; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all var(--t-fast); }
+    .checkbox-row.checked .checkbox-box { background:var(--green); border-color:var(--green); color:#fff; }
+
+    /* Confirmado */
+    .confirmado-box { text-align:center; padding:32px 20px; }
+    .conf-icon  { font-size:64px; margin-bottom:16px; }
+    .conf-title { font-family:var(--display); font-size:28px; font-weight:800; color:var(--green); margin-bottom:8px; }
+    .conf-sub   { font-size:14px; color:var(--t2); line-height:1.6; max-width:360px; margin:0 auto 24px; }
+    .checklist  { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:16px; text-align:left; margin-bottom:20px; }
+    .cl-item    { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+    .cl-item:last-child { border-bottom:none; }
+    .cl-check   { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all var(--t-fast); }
+    .cl-check:hover,.cl-check.done { background:var(--green); border-color:var(--green); color:#fff; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="#" onclick="history.back()" style="display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:11px;text-decoration:none;margin-right:4px">← Volver</a>
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-left:8px">/ Confirmar Reto</div>
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
+  </div>
+</nav>
+
+<div style="max-width:800px;margin:0 auto;padding:28px 24px">
+
+  <!-- Indicador de fases -->
+  <div class="fases-bar">
+    <div class="fase-step activa" id="fase-1-step">🔍 Análisis</div>
+    <div class="fase-sep"></div>
+    <div class="fase-step" id="fase-2-step">⚠️ Advertencia</div>
+    <div class="fase-sep"></div>
+    <div class="fase-step" id="fase-3-step">🔒 Confirmar</div>
+  </div>
+
+  <!-- FASE 1 -->
+  <div id="fase-1" class="fase-panel">
+
+    <div class="oponente-card">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:0.12em;margin-bottom:12px">ANALIZANDO OPONENTE</div>
+      <div class="op-header">
+        <div class="op-av" id="op-av" style="background:linear-gradient(135deg,#f0b429,#c4911a);color:#000">PG</div>
+        <div>
+          <div class="op-name" id="op-name">ProGamer_CO</div>
+          <div class="op-tag" id="op-tag">🇨🇴 Colombia · Nivel 24 · Verificado ✓</div>
+          <div id="op-ipo" style="margin-top:4px"></div>
+        </div>
+      </div>
+      <div class="op-stats">
+        <div class="op-stat"><div class="op-stat-v text-gold" id="op-wr">87%</div><div class="op-stat-l">Winrate</div></div>
+        <div class="op-stat"><div class="op-stat-v text-cyan" id="op-retos">142</div><div class="op-stat-l">Retos</div></div>
+        <div class="op-stat"><div class="op-stat-v" id="op-racha">×12</div><div class="op-stat-l">Racha</div></div>
+        <div class="op-stat"><div class="op-stat-v" id="op-nivel">24</div><div class="op-stat-l">Nivel</div></div>
+      </div>
+      <div class="historial-row">
+        <span class="historial-label">Últimos 5:</span>
+        <div id="op-historial"></div>
+      </div>
+    </div>
+
+    <div class="gamery-analisis">
+      <div class="ga-header">
+        <div class="ga-av">🤖</div>
+        <div style="font-family:var(--display);font-size:13px;font-weight:700">Análisis de Gamery</div>
+      </div>
+      <div class="ga-texto" id="gamery-analisis-texto">Analizando al oponente...</div>
+    </div>
+
+    <!-- Resumen del reto en fase 1 -->
+    <div class="resumen-financiero">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.12em;margin-bottom:10px">DETALLES DEL RETO</div>
+      <div class="rf-row"><span class="rf-label">Juego</span><span class="rf-val" id="rf-juego">—</span></div>
+      <div class="rf-row"><span class="rf-label">Modalidad</span><span class="rf-val" id="rf-modalidad">—</span></div>
+      <div class="rf-row"><span class="rf-label">Tu apuesta</span><span class="rf-val text-gold" id="rf-monto">—</span></div>
+      <div class="rf-row"><span class="rf-label">Premio si ganas</span><span class="rf-val text-green" id="rf-premio">—</span></div>
+      <div class="rf-row"><span class="rf-label">Fee GP (5%)</span><span class="rf-val text-faint" id="rf-fee">—</span></div>
+    </div>
+
+    <div class="chat-mini">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--display);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
+        💬 Pregúntale a Gamery antes de decidir
+      </div>
+      <div class="chat-msgs" id="chat-fase1">
+        <div class="chat-m bot">🤖 <strong>Gamery:</strong> Sin compromiso aún. Puedes preguntarme cualquier cosa sobre este reto o el oponente.</div>
+      </div>
+      <div class="sug-pills" id="sug-pills"></div>
+      <div class="chat-footer-mini">
+        <input class="input" id="chat-input-f1" placeholder="Ej: ¿Ha tenido disputas recientes?" style="font-size:12px" onkeydown="if(event.key==='Enter')preguntarGamery()">
+        <button class="btn btn-primary btn-sm" onclick="preguntarGamery()" style="flex-shrink:0">→</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-full" onclick="history.back()">← Volver al feed</button>
+      <button class="btn btn-primary btn-full" onclick="irFase2()">Postular reto →</button>
+    </div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div id="fase-2" class="fase-panel" style="display:none">
+
+    <div class="advertencia-box">
+      <div class="adv-icon">⚠️</div>
+      <div class="adv-title">ESTÁS A PUNTO DE POSTULAR UN RETO</div>
+      <div class="adv-sub">Una vez confirmes, tus GPC quedarán <strong>bloqueados en escrow</strong> hasta que el reto se resuelva o expire.<br>Todavía puedes cancelar en este paso.</div>
+    </div>
+
+    <div class="resumen-financiero">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.12em;margin-bottom:10px">RESUMEN FINANCIERO EXACTO</div>
+      <div class="rf-row"><span class="rf-label">Juego</span><span class="rf-val" id="rf2-juego">—</span></div>
+      <div class="rf-row"><span class="rf-label">Oponente</span><span class="rf-val" id="rf2-oponente">—</span></div>
+      <div class="rf-row"><span class="rf-label">Tu apuesta</span><span class="rf-val text-gold" id="rf2-monto">—</span></div>
+      <div class="rf-row"><span class="rf-label">Premio si ganas</span><span class="rf-val text-green" id="rf2-premio">—</span></div>
+      <div class="rf-row"><span class="rf-label">Fee GP (5%)</span><span class="rf-val text-faint" id="rf2-fee">—</span></div>
+
+      <div class="rf-saldo-wrap" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="rf-saldo-label">Tu saldo actual</div>
+          <div style="font-family:var(--display);font-size:16px;font-weight:700;color:var(--gold)" id="rf2-saldo-actual">— GPC</div>
+        </div>
+        <div class="rf-saldo-barra"><div class="rf-saldo-fill" id="rf2-saldo-bar" style="width:100%"></div></div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--t3)">Saldo disponible tras el reto</span>
+          <span style="font-family:var(--display);font-size:14px;font-weight:700" id="rf2-saldo-tras">— GPC</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gamery-analisis">
+      <div class="ga-header">
+        <div class="ga-av">🤖</div>
+        <div style="font-family:var(--display);font-size:13px;font-weight:700">Gamery verifica</div>
+      </div>
+      <div class="ga-texto" id="gamery-fase2-txt">Verificando fondos y condiciones del reto...</div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-full" onclick="volverFase1()">← Cancelar (puedes volver)</button>
+      <button class="btn btn-primary btn-full" id="btn-fase2-confirm" onclick="irFase3()">✅ Sí, postular reto →</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t3);text-align:center;margin-top:10px">
+      ⚠️ Al confirmar aceptas los <a href="#" style="color:var(--gold)">Términos y Condiciones</a> de GP
+    </div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div id="fase-3" class="fase-panel" style="display:none">
+
+    <div class="pnr-box">
+      <div class="pnr-icon">🔴</div>
+      <div class="pnr-title">PUNTO DE NO RETORNO</div>
+      <div class="pnr-items">
+        <div class="pnr-item"><div class="pnr-dot"></div>Tus GPC quedan <strong>CONGELADOS</strong> en escrow</div>
+        <div class="pnr-item"><div class="pnr-dot"></div>No puedes <strong>cancelar</strong> el reto unilateralmente</div>
+        <div class="pnr-item"><div class="pnr-dot"></div>Debes jugar en la <strong>fecha acordada</strong></div>
+        <div class="pnr-item"><div class="pnr-dot"></div>Si no juegas, <strong>pierdes por default</strong></div>
+      </div>
+    </div>
+
+    <div class="contrato">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.12em;margin-bottom:12px">📋 CONTRATO — GAMERY CERTIFICA</div>
+      <div class="contrato-row"><span class="ct-label">ID del reto</span><span class="ct-val font-mono text-faint" id="ct-id">GP-2025-—</span></div>
+      <div class="contrato-row"><span class="ct-label">Jugador 1</span><span class="ct-val" id="ct-j1">—</span></div>
+      <div class="contrato-row"><span class="ct-label">Jugador 2</span><span class="ct-val" id="ct-j2">—</span></div>
+      <div class="contrato-row"><span class="ct-label">Juego</span><span class="ct-val" id="ct-juego">—</span></div>
+      <div class="contrato-row"><span class="ct-label">Fecha</span><span class="ct-val" id="ct-fecha">Por coordinar</span></div>
+      <div class="contrato-row"><span class="ct-label">Apuesta c/u</span><span class="ct-val text-gold" id="ct-monto">—</span></div>
+      <div class="contrato-row"><span class="ct-label">Premio</span><span class="ct-val text-green" id="ct-premio">—</span></div>
+      <div class="contrato-row"><span class="ct-label">Árbitro</span><span class="ct-val">🤖 Gamery IA</span></div>
+    </div>
+
+    <div class="gamery-analisis" style="border-color:rgba(255,61,87,0.2);background:rgba(255,61,87,0.04)">
+      <div class="ga-header">
+        <div class="ga-av">🤖</div>
+        <div style="font-family:var(--display);font-size:13px;font-weight:700">Gamery certifica</div>
+      </div>
+      <div class="ga-texto" id="gamery-fase3-txt">Verificando fondos de ambos jugadores...</div>
+    </div>
+
+    <!-- Selector de fecha -->
+    <div class="input-group">
+      <label class="input-label">Fecha y hora del reto (opcional — puedes acordarla en el chat)</label>
+      <input class="input" id="fecha-reto" type="datetime-local">
+    </div>
+
+    <!-- Checkbox obligatorio -->
+    <div class="checkbox-row" id="checkbox-terminos" onclick="toggleCheckbox()">
+      <div class="checkbox-box" id="cb-box"></div>
+      <div style="font-size:13px;color:var(--t1);line-height:1.5">
+        <strong>Entiendo que no puedo cancelar después de confirmar.</strong> Los fondos serán congelados inmediatamente y el reto queda sellado por Gamery.
+      </div>
+    </div>
+
+    <button class="btn btn-full btn-lg" id="btn-confirmar-final" onclick="confirmarFinal()" disabled style="background:var(--muted);color:var(--t3);cursor:not-allowed;border:none">
+      🔒 CONFIRMAR Y CONGELAR FONDOS
+    </button>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t3);text-align:center;margin-top:8px">No hay botón de cancelar en esta fase</div>
+  </div>
+
+  <!-- CONFIRMADO -->
+  <div id="fase-confirmado" class="fase-panel" style="display:none">
+    <div class="confirmado-box">
+      <div class="conf-icon">✅</div>
+      <div class="conf-title">¡RETO SELLADO!</div>
+      <div class="conf-sub" id="conf-sub">Tus GPC están seguros en escrow. Gamery te notificará antes del reto.</div>
+
+      <div class="gamery-analisis" style="text-align:left;margin-bottom:20px">
+        <div class="ga-header">
+          <div class="ga-av">🤖</div>
+          <div style="font-family:var(--display);font-size:13px;font-weight:700">Gamery</div>
+        </div>
+        <div class="ga-texto" id="gamery-conf-txt">Reto certificado. Te recordaré antes del juego. ¡Mucho éxito!</div>
+      </div>
+
+      <div class="checklist">
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:10px">📋 Tu checklist</div>
+        <div id="checklist-items"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary btn-full" onclick="window.location.href='reto-detalle.html?id='+window.retoIdConfirmado">Ver el reto →</button>
+        <button class="btn btn-ghost btn-full" onclick="window.location.href='feed.html'">Volver al feed</button>
+        <button class="btn btn-ghost btn-full" onclick="window.location.href='gamery.html'">💬 Hablar con Gamery</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  const params    = new URLSearchParams(window.location.search);
+  const retoId    = params.get('id');
+  const pubId     = params.get('pub');
+  const oponente  = params.get('oponente') || 'ProGamer_CO';
+  const myUser    = Auth.getUser();
+  let checkboxMarcado = false;
+  window.retoIdConfirmado = retoId || 'GP-2025-' + Math.random().toString(36).slice(2,8).toUpperCase();
+
+  const MOCK_RETO = {
+    id:          window.retoIdConfirmado,
+    nombre_juego:'eFootball 2025', modalidad:'1v1 Competitivo',
+    monto_apuesta:500, oponente_username: oponente,
+    j1_username: myUser?.username || 'Tú',
+    j2_username: oponente,
+  };
+
+  const MOCK_OPONENTE = {
+    username:    oponente, pais:'🇨🇴', nivel:24, winrate:87.3,
+    retos_jugados:142, racha_actual:12, historial:['✅','✅','✅','✅','❌'],
+    ipo: { ticker:'PRGM', precio_actual:48.5 },
+  };
+
+  const MOCK_WALLET = { saldo_gpc: 1250 };
+
+  // ── FASE 1 ───────────────────────────────────────────────────
+  function initFase1() {
+    const op = MOCK_OPONENTE;
+    const r  = MOCK_RETO;
+
+    // Oponente
+    document.getElementById('op-name').textContent = op.username;
+    document.getElementById('op-tag').textContent  = `${op.pais} · Nivel ${op.nivel}`;
+    document.getElementById('op-wr').textContent   = `${op.winrate}%`;
+    document.getElementById('op-retos').textContent= op.retos_jugados;
+    document.getElementById('op-racha').textContent= `×${op.racha_actual}`;
+    document.getElementById('op-nivel').textContent= op.nivel;
+
+    if (op.ipo) {
+      document.getElementById('op-ipo').innerHTML =
+        `<span class="badge badge-gold" style="font-size:9px">📈 $${op.ipo.ticker} · ${op.ipo.precio_actual} GPC</span>`;
+    }
+
+    // Historial
+    document.getElementById('op-historial').innerHTML = op.historial.map(h =>
+      `<div class="hist-dot" style="background:${h==='✅'?'rgba(0,230,118,0.15)':'rgba(255,61,87,0.1)'}">${h}</div>`
+    ).join('');
+
+    // Reto
+    const monto  = r.monto_apuesta;
+    const premio = Math.round(monto * 2 * 0.95);
+    const fee    = Math.round(monto * 2 * 0.05);
+    document.getElementById('rf-juego').textContent   = r.nombre_juego;
+    document.getElementById('rf-modalidad').textContent= r.modalidad;
+    document.getElementById('rf-monto').textContent   = GPC.format(monto);
+    document.getElementById('rf-premio').textContent  = GPC.format(premio);
+    document.getElementById('rf-fee').textContent     = GPC.format(fee);
+
+    // Análisis de Gamery
+    const diff = op.winrate - 50;
+    let analisis;
+    if (diff > 15)        analisis = `Este jugador tiene un winrate de <strong>${op.winrate}%</strong>, superior al promedio. La paridad es ${Math.round(op.winrate/(op.winrate+50)*100)}/${Math.round(50/(op.winrate+50)*100)} a su favor. Asegúrate de estar preparado.`;
+    else if (diff < -15)  analisis = `Tienes ventaja estadística. El oponente tiene ${op.winrate}% WR. Es un reto accesible para tu nivel.`;
+    else                  analisis = `Los dos tienen niveles similares con ${op.winrate}% WR. Será un reto competitivo e interesante. ¡Buenas chances!`;
+
+    document.getElementById('gamery-analisis-texto').innerHTML = analisis;
+
+    // Sugerencias chat
+    const sugs = ['¿Tiene victorias recientes?', '¿Ha tenido disputas?', '¿Cuánto lleva activo?', '¿Cuáles son sus condiciones?'];
+    document.getElementById('sug-pills').innerHTML = sugs.map(s =>
+      `<div class="sug-pill" onclick="document.getElementById('chat-input-f1').value='${s}';preguntarGamery()">${s}</div>`
+    ).join('');
+  }
+
+  async function preguntarGamery() {
+    const input = document.getElementById('chat-input-f1');
+    const texto = input.value.trim();
+    if (!texto) return;
+    input.value = '';
+
+    const msgs = document.getElementById('chat-fase1');
+    msgs.innerHTML += `<div class="chat-m user">${texto}</div>`;
+
+    try {
+      const res = await API.gamery.chat(texto, [], retoId);
+      msgs.innerHTML += `<div class="chat-m bot">🤖 <strong>Gamery:</strong> ${res.respuesta}</div>`;
+    } catch {
+      msgs.innerHTML += `<div class="chat-m bot">🤖 <strong>Gamery:</strong> Basándome en el perfil de ${MOCK_OPONENTE.username}: tiene ${MOCK_OPONENTE.winrate}% de winrate con ${MOCK_OPONENTE.retos_jugados} retos jugados. Su racha actual es de ×${MOCK_OPONENTE.racha_actual}.</div>`;
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+    document.getElementById('sug-pills').innerHTML = '';
+  }
+
+  // ── FASE 2 ───────────────────────────────────────────────────
+  function irFase2() {
+    setFase(2);
+    const r     = MOCK_RETO;
+    const w     = MOCK_WALLET;
+    const monto = r.monto_apuesta;
+
+    document.getElementById('rf2-juego').textContent   = r.nombre_juego;
+    document.getElementById('rf2-oponente').textContent= r.oponente_username;
+    document.getElementById('rf2-monto').textContent   = GPC.format(monto);
+    document.getElementById('rf2-premio').textContent  = GPC.format(Math.round(monto * 2 * 0.95));
+    document.getElementById('rf2-fee').textContent     = GPC.format(Math.round(monto * 2 * 0.05));
+    document.getElementById('rf2-saldo-actual').textContent = GPC.format(w.saldo_gpc);
+    document.getElementById('rf2-saldo-tras').textContent   = GPC.format(w.saldo_gpc - monto);
+
+    const pct = Math.max(0, Math.round((w.saldo_gpc - monto) / w.saldo_gpc * 100));
+    document.getElementById('rf2-saldo-bar').style.width = `${pct}%`;
+
+    document.getElementById('gamery-fase2-txt').innerHTML = `He verificado que tienes <strong>${GPC.format(w.saldo_gpc)}</strong> disponibles. Si confirmas, <strong>${GPC.format(monto)}</strong> quedarán bloqueados en escrow. Te quedarán <strong>${GPC.format(w.saldo_gpc - monto)}</strong> disponibles para otros retos. ¿Listo para proceder?`;
+  }
+
+  function volverFase1() { setFase(1); }
+
+  // ── FASE 3 ───────────────────────────────────────────────────
+  function irFase3() {
+    setFase(3);
+    const r = MOCK_RETO;
+    const id = window.retoIdConfirmado;
+
+    document.getElementById('ct-id').textContent    = id;
+    document.getElementById('ct-j1').textContent    = r.j1_username;
+    document.getElementById('ct-j2').textContent    = r.j2_username;
+    document.getElementById('ct-juego').textContent = `${r.nombre_juego} · ${r.modalidad}`;
+    document.getElementById('ct-monto').textContent = GPC.format(r.monto_apuesta);
+    document.getElementById('ct-premio').textContent= GPC.format(Math.round(r.monto_apuesta * 2 * 0.95));
+
+    document.getElementById('gamery-fase3-txt').innerHTML = `He verificado los fondos de ambos jugadores. Al confirmar, el reto queda <strong>sellado y certificado</strong> por Gamery. Los <strong>${GPC.format(r.monto_apuesta)}</strong> se congelarán inmediatamente en escrow.`;
+  }
+
+  function toggleCheckbox() {
+    checkboxMarcado = !checkboxMarcado;
+    document.getElementById('checkbox-terminos').classList.toggle('checked', checkboxMarcado);
+    document.getElementById('cb-box').textContent = checkboxMarcado ? '✓' : '';
+    const btn = document.getElementById('btn-confirmar-final');
+    if (checkboxMarcado) {
+      btn.disabled  = false;
+      btn.style.background = 'var(--red)';
+      btn.style.color      = '#fff';
+      btn.style.cursor     = 'pointer';
+    } else {
+      btn.disabled  = true;
+      btn.style.background = 'var(--muted)';
+      btn.style.color      = 'var(--t3)';
+      btn.style.cursor     = 'not-allowed';
+    }
+  }
+
+  async function confirmarFinal() {
+    if (!checkboxMarcado) return;
+    const btn = document.getElementById('btn-confirmar-final');
+    btn.textContent = '🔒 Congelando fondos...'; btn.disabled = true;
+
+    try {
+      const fecha = document.getElementById('fecha-reto').value;
+      await API.retos.aceptar(retoId || 'demo');
+      mostrarConfirmado(fecha);
+    } catch {
+      mostrarConfirmado(document.getElementById('fecha-reto').value);
+    }
+  }
+
+  function mostrarConfirmado(fecha) {
+    setFase('confirmado');
+    const r = MOCK_RETO;
+
+    const texto = fecha
+      ? `Tus <strong>${GPC.format(r.monto_apuesta)}</strong> están en escrow. Reto programado para el <strong>${new Date(fecha).toLocaleString('es-CO')}</strong>. Te recordaré 1 hora antes.`
+      : `Tus <strong>${GPC.format(r.monto_apuesta)}</strong> están en escrow. Coordina la fecha con tu oponente en el chat del reto.`;
+
+    document.getElementById('conf-sub').textContent = `Reto ID: ${window.retoIdConfirmado}`;
+    document.getElementById('gamery-conf-txt').innerHTML = texto;
+
+    const checklist = [
+      'Confirma tu conexión a internet antes del reto',
+      `Activa tu cuenta de ${r.nombre_juego}`,
+      'Captura el marcador final al terminar',
+      'Sube el screenshot aquí dentro de las 24 horas siguientes',
+    ];
+
+    document.getElementById('checklist-items').innerHTML = checklist.map((c, i) => `
+      <div class="cl-item">
+        <div class="cl-check" id="cl-${i}" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div>
+        <span style="font-size:13px;color:var(--t2)">${c}</span>
+      </div>`).join('');
+
+    toast('🔒 Reto sellado y fondos congelados. ¡Mucho éxito!', 'success');
+  }
+
+  function setFase(n) {
+    ['fase-1','fase-2','fase-3','fase-confirmado'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    const key = n === 'confirmado' ? 'fase-confirmado' : `fase-${n}`;
+    document.getElementById(key).style.display = 'block';
+
+    // Steps
+    [1,2,3].forEach(i => {
+      const el = document.getElementById(`fase-${i}-step`);
+      if (!el) return;
+      el.classList.remove('activa','done');
+      if (n === 'confirmado' || i < n) el.classList.add('done');
+      else if (i === n) el.classList.add('activa');
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  initFase1();
+  initNavbar();
+</script>
+</body>
+</html>

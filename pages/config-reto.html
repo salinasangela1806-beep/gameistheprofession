@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GP – Mi Zona de Confort</title>
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    .config-layout { display:grid; grid-template-columns:1fr 300px; gap:24px; align-items:start; }
+    .config-main { display:flex; flex-direction:column; gap:20px; }
+
+    .config-section {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r-xl); padding:24px;
+    }
+
+    .cs-title { font-family:var(--display); font-size:18px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+    .cs-sub   { font-size:13px; color:var(--t2); margin-bottom:20px; line-height:1.5; }
+
+    /* Juegos */
+    .juego-toggle {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px; background:var(--elevated); border:1px solid var(--border);
+      border-radius:var(--r-md); margin-bottom:8px; cursor:pointer;
+      transition:all var(--t-fast);
+    }
+    .juego-toggle:hover { border-color:var(--muted); }
+    .juego-toggle.enabled { border-color:rgba(240,180,41,0.3); background:var(--gold-faint); }
+    .jt-left { display:flex; align-items:center; gap:10px; }
+    .jt-emoji { font-size:20px; }
+    .jt-name  { font-family:var(--ui); font-size:14px; font-weight:600; }
+    .jt-tag   { font-family:var(--mono); font-size:10px; color:var(--t3); margin-top:2px; }
+    .toggle-switch {
+      width:40px; height:22px; border-radius:var(--pill);
+      background:var(--muted); position:relative; transition:background var(--t-fast); flex-shrink:0;
+    }
+    .toggle-switch.on { background:var(--gold); }
+    .toggle-knob {
+      position:absolute; top:3px; left:3px;
+      width:16px; height:16px; border-radius:50%;
+      background:#fff; transition:left var(--t-fast);
+    }
+    .toggle-switch.on .toggle-knob { left:21px; }
+
+    /* Monto slider */
+    .range-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+    .range-input-wrap { position:relative; }
+    .range-prefix { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-family:var(--mono); font-size:10px; color:var(--t3); pointer-events:none; }
+    .range-input { padding-left:52px !important; }
+    .tier-range-visual { display:flex; gap:4px; margin-top:8px; }
+    .tier-seg { flex:1; height:6px; border-radius:3px; opacity:0.4; transition:opacity var(--t-fast); }
+    .tier-seg.active { opacity:1; }
+
+    /* Horario */
+    .horario-grid { display:flex; flex-direction:column; gap:6px; }
+    .horario-dia  { display:grid; grid-template-columns:90px 1fr; gap:10px; align-items:center; }
+    .dia-label    { font-family:var(--mono); font-size:11px; color:var(--t2); letter-spacing:0.06em; text-transform:capitalize; }
+    .dia-slots    { display:flex; align-items:center; gap:8px; }
+    .dia-time     { font-family:var(--mono); font-size:11px; color:var(--gold); background:var(--gold-faint); border:1px solid rgba(240,180,41,0.2); border-radius:var(--r-sm); padding:3px 10px; }
+    .dia-empty    { font-family:var(--mono); font-size:10px; color:var(--t3); }
+    .dia-edit-btn { font-family:var(--mono); font-size:9px; padding:3px 8px; border-radius:var(--r-sm); border:1px solid var(--border); background:transparent; color:var(--t3); cursor:pointer; transition:all var(--t-fast); white-space:nowrap; }
+    .dia-edit-btn:hover { border-color:var(--gold); color:var(--gold); }
+    .dia-edit-btn.active { border-color:var(--red); color:var(--red); }
+
+    /* Opciones radio */
+    .radio-group { display:flex; flex-direction:column; gap:8px; }
+    .radio-item  { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border); cursor:pointer; transition:all var(--t-fast); }
+    .radio-item:hover { border-color:var(--muted); background:var(--elevated); }
+    .radio-item.selected { border-color:rgba(240,180,41,0.3); background:var(--gold-faint); }
+    .radio-dot  { width:16px; height:16px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all var(--t-fast); }
+    .radio-item.selected .radio-dot { border-color:var(--gold); background:var(--gold); }
+    .radio-dot::after { content:''; width:6px; height:6px; border-radius:50%; background:#fff; display:none; }
+    .radio-item.selected .radio-dot::after { display:block; }
+    .radio-label { font-family:var(--ui); font-size:14px; font-weight:500; }
+    .radio-sub   { font-family:var(--mono); font-size:10px; color:var(--t3); margin-top:1px; }
+
+    /* Switch notificaciones */
+    .notif-row  { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+    .notif-row:last-child { border-bottom:none; }
+    .notif-info { flex:1; }
+    .notif-name { font-family:var(--ui); font-size:14px; font-weight:500; }
+    .notif-desc { font-family:var(--mono); font-size:10px; color:var(--t3); margin-top:2px; }
+
+    /* Gamery resumen panel */
+    .gamery-resumen {
+      background:linear-gradient(135deg,rgba(240,180,41,0.06),rgba(0,229,255,0.03));
+      border:1px solid rgba(240,180,41,0.2); border-radius:var(--r-xl); padding:20px;
+    }
+    .gr-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .gr-av { width:40px; height:40px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .gr-texto { font-family:var(--ui); font-size:13px; color:var(--t2); line-height:1.6; background:var(--elevated); border-radius:var(--r-md); padding:12px; }
+    .gr-texto strong { color:var(--gold); }
+
+    /* Botón guardar sticky */
+    .save-bar { position:sticky; bottom:0; padding:16px 0; background:linear-gradient(transparent,var(--black) 50%); margin-top:8px; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="perfil.html" style="display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:11px;text-decoration:none;margin-right:4px">← Perfil</a>
+  <a href="/" class="nav-logo">G<span>P</span></a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-left:8px">/ Zona de Confort</div>
+  <div class="nav-right">
+    <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
+    <a href="perfil.html" class="nav-avatar" id="nav-avatar">GP</a>
+  </div>
+</nav>
+
+<div class="app-shell" style="grid-template-rows:auto">
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <a href="feed.html"    class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Matchmaking</span></a>
+    <a href="arena.html"   class="sidebar-item"><span class="sidebar-icon">🏟️</span><span class="sidebar-label">GP Arena</span></a>
+    <a href="perfil.html"  class="sidebar-item"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+    <a href="wallet.html"  class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+    <div class="sidebar-section">Mercado</div>
+    <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+    <div class="sidebar-section">Ayuda</div>
+    <a href="gamery.html"  class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+  </nav>
+
+  <main class="main-content">
+    <div style="margin-bottom:24px">
+      <h1 style="font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:4px">⚔️ Mi Zona de Confort</h1>
+      <p style="color:var(--t2);font-size:14px">Configura esto una vez y Gamery se encarga del resto: filtrar oponentes, proponer horarios y validar rangos automáticamente.</p>
+    </div>
+
+    <div class="config-layout">
+      <div class="config-main">
+
+        <!-- Juegos habilitados -->
+        <div class="config-section">
+          <div class="cs-title">🎮 Juegos en los que acepto retos</div>
+          <div class="cs-sub">Gamery solo te mostrará retos de los juegos que habilites aquí. Desactiva los que no quieras recibir.</div>
+          <div id="juegos-list"></div>
+        </div>
+
+        <!-- Rango de apuesta -->
+        <div class="config-section">
+          <div class="cs-title">💰 Rango de apuesta cómodo</div>
+          <div class="cs-sub">Gamery filtrará automáticamente los retos fuera de este rango. No verás retos por encima de tu máximo.</div>
+
+          <div class="range-row">
+            <div class="input-group" style="margin-bottom:0">
+              <label class="input-label">Mínimo</label>
+              <div class="range-input-wrap">
+                <span class="range-prefix">min GPC</span>
+                <input class="input range-input" id="monto-min" type="number" value="100" min="50" max="9999" step="50" oninput="updateRangoVisual()">
+              </div>
+            </div>
+            <div class="input-group" style="margin-bottom:0">
+              <label class="input-label">Máximo</label>
+              <div class="range-input-wrap">
+                <span class="range-prefix">max GPC</span>
+                <input class="input range-input" id="monto-max" type="number" value="1000" min="51" max="10000" step="50" oninput="updateRangoVisual()">
+              </div>
+            </div>
+          </div>
+
+          <div id="rango-preview" style="background:var(--elevated);border-radius:var(--r-md);padding:12px;text-align:center;margin-bottom:12px">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px">Tu rango actual</div>
+            <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--gold)" id="rango-text">100 – 1.000 GPC</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:3px" id="rango-usd">≈ $10 – $100 USD</div>
+          </div>
+
+          <div class="tier-range-visual" id="tier-visual"></div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">
+            <span>Amateur</span><span>SemiPro</span><span>Pro</span><span>Elite</span><span>Master</span><span>Diamante</span>
+          </div>
+        </div>
+
+        <!-- Horario -->
+        <div class="config-section">
+          <div class="cs-title">🕐 Horario disponible</div>
+          <div class="cs-sub">Gamery usará esto para proponer horarios automáticamente y no molestarte fuera de tu disponibilidad.</div>
+
+          <div class="input-group">
+            <label class="input-label">Zona horaria</label>
+            <select class="input" id="timezone" style="max-width:300px">
+              <option value="America/Bogota">🇨🇴 Colombia (GMT-5)</option>
+              <option value="America/Mexico_City">🇲🇽 México (GMT-6)</option>
+              <option value="America/Argentina/Buenos_Aires">🇦🇷 Argentina (GMT-3)</option>
+              <option value="America/Sao_Paulo">🇧🇷 Brasil (GMT-3)</option>
+              <option value="America/Lima">🇵🇪 Perú (GMT-5)</option>
+              <option value="America/Santiago">🇨🇱 Chile (GMT-4)</option>
+            </select>
+          </div>
+
+          <div class="horario-grid" id="horario-grid"></div>
+        </div>
+
+        <!-- Preferencias de oponente -->
+        <div class="config-section">
+          <div class="cs-title">🌍 Preferencia de oponente</div>
+          <div class="cs-sub">Gamery priorizará estos criterios al ordenar el feed y filtrar retadores entrantes.</div>
+
+          <label class="input-label" style="margin-bottom:10px;display:block">País preferido</label>
+          <div class="radio-group" id="pais-group">
+            <div class="radio-item selected" onclick="selectPais('cualquiera',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">🌍 Cualquier país</div><div class="radio-sub">Más oponentes disponibles</div></div>
+            </div>
+            <div class="radio-item" onclick="selectPais('latam',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">🌎 Solo LATAM</div><div class="radio-sub">Mejor conexión y horario compatible</div></div>
+            </div>
+            <div class="radio-item" onclick="selectPais('CO',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">🇨🇴 Solo Colombia</div><div class="radio-sub">Oponentes en tu mismo país</div></div>
+            </div>
+          </div>
+
+          <label class="input-label" style="margin:18px 0 10px;display:block">Nivel mínimo del oponente</label>
+          <div class="radio-group" id="nivel-group">
+            <div class="radio-item selected" onclick="selectNivel('cualquiera',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">Sin restricción</div><div class="radio-sub">Acepto jugadores de cualquier nivel</div></div>
+            </div>
+            <div class="radio-item" onclick="selectNivel('wr60',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">Winrate ≥ 60%</div><div class="radio-sub">Jugadores con experiencia mínima</div></div>
+            </div>
+            <div class="radio-item" onclick="selectNivel('wr75',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">Winrate ≥ 75%</div><div class="radio-sub">Solo jugadores de alto nivel</div></div>
+            </div>
+            <div class="radio-item" onclick="selectNivel('ipo',this)">
+              <div class="radio-dot"></div>
+              <div><div class="radio-label">Solo con IPO activo 📈</div><div class="radio-sub">Jugadores verificados en bolsa</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="config-section">
+          <div class="cs-title">🔔 Notificaciones de Gamery</div>
+          <div class="cs-sub">Controla cuándo y cómo Gamery te avisa de oportunidades.</div>
+
+          <div id="notif-list">
+            <div class="notif-row">
+              <div class="notif-info">
+                <div class="notif-name">Alguien me reta</div>
+                <div class="notif-desc">Push cuando un jugador te envía un reto</div>
+              </div>
+              <div class="toggle-switch on" id="notif-reto" onclick="toggleNotif('reto',this)"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="notif-row">
+              <div class="notif-info">
+                <div class="notif-name">Solo si cumple mi config</div>
+                <div class="notif-desc">Gamery filtra retos fuera de tu rango antes de notificarte</div>
+              </div>
+              <div class="toggle-switch on" id="notif-filtro" onclick="toggleNotif('filtro',this)"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="notif-row">
+              <div class="notif-info">
+                <div class="notif-name">No molestar fuera de horario</div>
+                <div class="notif-desc">Silencia notificaciones fuera de tu disponibilidad</div>
+              </div>
+              <div class="toggle-switch" id="notif-horario" onclick="toggleNotif('horario',this)"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="notif-row">
+              <div class="notif-info">
+                <div class="notif-name">Resumen diario de Gamery</div>
+                <div class="notif-desc">Gamery te avisa a las 5PM sobre retos disponibles esa noche</div>
+              </div>
+              <div class="toggle-switch on" id="notif-resumen" onclick="toggleNotif('resumen',this)"><div class="toggle-knob"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <button class="btn btn-primary btn-full btn-lg" onclick="guardarConfig()">
+            💾 Guardar configuración
+          </button>
+        </div>
+
+      </div><!-- /config-main -->
+
+      <!-- Panel derecho -->
+      <div>
+        <div class="gamery-resumen">
+          <div class="gr-header">
+            <div class="gr-av">🤖</div>
+            <div>
+              <div style="font-family:var(--display);font-size:15px;font-weight:700">Gamery</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--green)">● Online</div>
+            </div>
+          </div>
+          <div class="gr-texto" id="gamery-resumen-texto">
+            "Configurando tu zona de confort... Te diré exactamente qué haré con esta información."
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:12px">¿Qué hace Gamery con esto?</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:8px">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Filtra el feed</strong> — solo ves retos de tus juegos y en tu rango</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Propone horarios</strong> — cruza tu disponibilidad con la del oponente</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Valida rangos</strong> — bloquea notificaciones de retos fuera de tu rango</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+              <div style="font-size:12px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Publica en Arena</strong> — con 1 toque usando tu config guardada</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:10px">Acceso rápido a Arena</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.5">Con tu config guardada puedes publicar en Arena con un solo toque.</div>
+          <button class="btn btn-secondary btn-full" onclick="publicarRapido()">🏟️ Publicar con mi config</button>
+        </div>
+      </div>
+
+    </div><!-- /config-layout -->
+  </main>
+</div>
+
+<button class="gamery-fab" onclick="window.location.href='gamery.html'">🤖<div class="gamery-fab-pulse"></div></button>
+
+<script src="../js/api.js"></script>
+<script>
+  requireAuth();
+
+  const JUEGOS_DISPONIBLES = [
+    { nombre:'eFootball 2025',   emoji:'⚽', tag:'División 1' },
+    { nombre:'Counter-Strike 2', emoji:'🔫', tag:'Faceit 8' },
+    { nombre:'Rocket League',    emoji:'🚀', tag:'Diamante' },
+    { nombre:'Fortnite',         emoji:'🌪️', tag:'Campeón' },
+    { nombre:'Dota 2',           emoji:'⚔️', tag:'Divino' },
+    { nombre:'Fall Guys',        emoji:'👑', tag:'Oro' },
+  ];
+
+  const DIAS = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+
+  const TIERS = {
+    amateur:  { color:'#8B4513' }, semipro:{ color:'#4169E1' },
+    pro:      { color:'#f0b429' }, elite:  { color:'#FF8C00' },
+    master:   { color:'#DC143C' }, diamante:{ color:'#00e5ff' },
+  };
+
+  let config = {
+    juegos_habilitados: ['eFootball 2025','Counter-Strike 2'],
+    monto_min_gpc: 100, monto_max_gpc: 1000,
+    timezone: 'America/Bogota',
+    horario: {
+      lunes:     { inicio:'18:00', fin:'22:00' },
+      martes:    { inicio:'18:00', fin:'22:00' },
+      miercoles: { inicio:'18:00', fin:'22:00' },
+      jueves:    { inicio:'18:00', fin:'22:00' },
+      viernes:   { inicio:'20:00', fin:'24:00' },
+      sabado:    { inicio:'16:00', fin:'24:00' },
+      domingo:   { inicio:'18:00', fin:'22:00' },
+    },
+    pais_preferido: 'cualquiera',
+    winrate_minimo: 0,
+    notif_fuera_horario: false,
+    notif_rango_diferente: true,
+    notif_resumen_diario: true,
+  };
+
+  async function loadConfig() {
+    try {
+      const res = await API.wallet.get(); // demo
+    } catch {}
+
+    renderJuegos();
+    renderHorario();
+    updateRangoVisual();
+    updateResumenGamery();
+  }
+
+  function renderJuegos() {
+    document.getElementById('juegos-list').innerHTML = JUEGOS_DISPONIBLES.map(j => {
+      const on = config.juegos_habilitados.includes(j.nombre);
+      return `
+        <div class="juego-toggle${on ? ' enabled' : ''}" id="jt-${j.nombre.replace(/[^a-z]/gi,'')}" onclick="toggleJuego('${j.nombre}',this)">
+          <div class="jt-left">
+            <span class="jt-emoji">${j.emoji}</span>
+            <div>
+              <div class="jt-name">${j.nombre}</div>
+              <div class="jt-tag">${j.tag}</div>
+            </div>
+          </div>
+          <div class="toggle-switch${on ? ' on' : ''}">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function toggleJuego(nombre, el) {
+    const idx = config.juegos_habilitados.indexOf(nombre);
+    const sw  = el.querySelector('.toggle-switch');
+    if (idx === -1) {
+      config.juegos_habilitados.push(nombre);
+      sw.classList.add('on');
+      el.classList.add('enabled');
+    } else {
+      if (config.juegos_habilitados.length <= 1) { toast('Debes tener al menos 1 juego habilitado', 'error'); return; }
+      config.juegos_habilitados.splice(idx, 1);
+      sw.classList.remove('on');
+      el.classList.remove('enabled');
+    }
+    updateResumenGamery();
+  }
+
+  function renderHorario() {
+    document.getElementById('horario-grid').innerHTML = DIAS.map(dia => {
+      const slot = config.horario[dia];
+      const diaLabel = dia.charAt(0).toUpperCase() + dia.slice(1);
+      return `
+        <div class="horario-dia">
+          <span class="dia-label">${diaLabel}</span>
+          <div class="dia-slots">
+            ${slot
+              ? `<span class="dia-time">${slot.inicio} – ${slot.fin}</span>`
+              : `<span class="dia-empty">No disponible</span>`}
+            <button class="dia-edit-btn${slot ? '' : ''}" onclick="editarDia('${dia}',this)">
+              ${slot ? '✏️ Editar' : '+ Agregar'}
+            </button>
+            ${slot ? `<button class="dia-edit-btn" style="color:var(--red);border-color:var(--red)" onclick="quitarDia('${dia}')">✕</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function editarDia(dia, btn) {
+    const actual = config.horario[dia];
+    const inicio = prompt(`Hora de inicio para ${dia} (ej: 18:00):`, actual?.inicio || '18:00');
+    if (!inicio) return;
+    const fin = prompt(`Hora de fin para ${dia} (ej: 22:00):`, actual?.fin || '22:00');
+    if (!fin) return;
+    config.horario[dia] = { inicio, fin };
+    renderHorario();
+    updateResumenGamery();
+  }
+
+  function quitarDia(dia) {
+    delete config.horario[dia];
+    renderHorario();
+    updateResumenGamery();
+  }
+
+  function updateRangoVisual() {
+    const min = parseInt(document.getElementById('monto-min').value) || 50;
+    const max = parseInt(document.getElementById('monto-max').value) || 1000;
+    config.monto_min_gpc = min;
+    config.monto_max_gpc = max;
+
+    document.getElementById('rango-text').textContent = `${min.toLocaleString()} – ${max.toLocaleString()} GPC`;
+    document.getElementById('rango-usd').textContent  = `≈ ${GPC.toUSD(min).replace('$','')} – ${GPC.toUSD(max)} USD`;
+
+    // Tier visual
+    const TIERS_ORDER = ['amateur','semipro','pro','elite','master','diamante'];
+    const TIERS_MIN   = [50, 100, 500, 1000, 5000, 10000];
+    const TIERS_MAX   = [99, 499, 999, 4999, 9999, 10000];
+
+    document.getElementById('tier-visual').innerHTML = TIERS_ORDER.map((t, i) => {
+      const overlap = min <= TIERS_MAX[i] && max >= TIERS_MIN[i];
+      return `<div class="tier-seg${overlap ? ' active' : ''}" style="background:${TIERS[t].color}"></div>`;
+    }).join('');
+
+    updateResumenGamery();
+  }
+
+  function selectPais(val, el) {
+    config.pais_preferido = val;
+    document.querySelectorAll('#pais-group .radio-item').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    updateResumenGamery();
+  }
+
+  function selectNivel(val, el) {
+    config.winrate_minimo = val === 'cualquiera' ? 0 : val === 'wr60' ? 60 : val === 'wr75' ? 75 : 0;
+    config.solo_con_ipo   = val === 'ipo';
+    document.querySelectorAll('#nivel-group .radio-item').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    updateResumenGamery();
+  }
+
+  function toggleNotif(tipo, el) {
+    el.classList.toggle('on');
+    const on = el.classList.contains('on');
+    if (tipo === 'horario')  config.notif_fuera_horario = !on;
+    if (tipo === 'filtro')   config.notif_rango_diferente = on;
+    if (tipo === 'resumen')  config.notif_resumen_diario = on;
+  }
+
+  function updateResumenGamery() {
+    const juegos = config.juegos_habilitados;
+    const min    = config.monto_min_gpc;
+    const max    = config.monto_max_gpc;
+    const wr     = config.winrate_minimo;
+    const pais   = config.pais_preferido;
+    const dias   = Object.keys(config.horario).length;
+
+    let texto = `"Listo. Con esta configuración voy a:\n\n`;
+    if (juegos.length) texto += `• Mostrarte retos de <strong>${juegos.slice(0,2).join('</strong> y <strong>')}${juegos.length > 2 ? ` (+${juegos.length-2} más)` : ''}</strong>\n`;
+    texto += `• Filtrar apuestas entre <strong>${min.toLocaleString()} y ${max.toLocaleString()} GPC</strong>\n`;
+    if (wr > 0) texto += `• Buscar oponentes con WR ≥ <strong>${wr}%</strong>\n`;
+    if (pais !== 'cualquiera') texto += `• Priorizar jugadores de <strong>${pais}</strong>\n`;
+    if (dias > 0) texto += `• Proponer horarios en <strong>${dias} días</strong> de la semana\n`;
+    texto += `\nPuedes cambiar esto cuando quieras."`;
+
+    document.getElementById('gamery-resumen-texto').innerHTML = texto.replace(/\n/g, '<br>');
+  }
+
+  async function guardarConfig() {
+    const btn = document.querySelector('.save-bar button');
+    btn.textContent = '💾 Guardando...'; btn.disabled = true;
+
+    try {
+      await API.wallet.get(); // placeholder hasta que exista el endpoint de config
+      toast('✅ Configuración guardada. Gamery la aplicará en todos tus retos.', 'success');
+    } catch {
+      toast('✅ Configuración guardada (demo)', 'success');
+    }
+
+    btn.textContent = '💾 Guardar configuración'; btn.disabled = false;
+  }
+
+  function publicarRapido() {
+    const juego = config.juegos_habilitados[0] || 'eFootball 2025';
+    const monto = Math.round((config.monto_min_gpc + config.monto_max_gpc) / 2);
+    toast(`🏟️ Publicando en Arena: ${juego} · ${GPC.format(monto)}...`, 'info');
+    setTimeout(() => window.location.href = 'arena.html', 1200);
+  }
+
+  loadConfig();
+  initNavbar();
+</script>
+</body>
+</html>
