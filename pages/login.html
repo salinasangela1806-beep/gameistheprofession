@@ -394,6 +394,7 @@
     const pwd      = document.getElementById('reg-pwd').value;
     const pwd2     = document.getElementById('reg-pwd2').value;
     const pais     = document.getElementById('reg-pais').value;
+    const juegazo  = document.getElementById('reg-juego').value;
 
     if (!username || !nombre || !email || !pwd) { showError('Completa todos los campos'); return; }
     if (pwd !== pwd2) { showError('Las contraseñas no coinciden'); return; }
@@ -403,7 +404,7 @@
     btn.textContent = 'Creando cuenta...'; btn.disabled = true;
 
     try {
-      const session = await API.auth.registro({ email, password: pwd, username, nombre_display: nombre, pais, idioma_principal: 'es', tipo: 'retador' });
+      const session = await API.auth.registro({ email, password: pwd, username, nombre_display: nombre, pais, idioma_principal: 'es', tipo: 'retador', juego: juegazo});
       Auth.setToken(session.access_token);
       Auth.setUser(session.perfil);
       toast('¡Cuenta creada! 50 GPC acreditados 🎉', 'success');
