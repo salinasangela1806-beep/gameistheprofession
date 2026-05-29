@@ -3,7 +3,7 @@
 // Todas las llamadas al backend FastAPI Python
 // ============================================================
 
-const API_URL = window.API_URL;
+const API_URL = "https://gameisthebackend.vercel.app";
 
 // ── Token ────────────────────────────────────────────────────
 const Auth = {
