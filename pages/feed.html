@@ -422,9 +422,9 @@
   async function loadWallet() {
     try {
       const w = await API.wallet.get();
-      document.getElementById('rp-saldo').textContent = GPC.format(w.saldo_gpc);
-      document.getElementById('rp-usd').textContent   = `GPC · ≈ ${GPC.toUSD(w.saldo_gpc)}`;
-      document.getElementById('nav-wallet').innerHTML  = `<span class="wallet-dot"></span>${GPC.format(w.saldo_gpc)}`;
+      document.getElementById('rp-saldo').textContent = GPC.format(w.saldo_total);
+      document.getElementById('rp-usd').textContent   = `GPC · ≈ ${GPC.toUSD(w.saldo_total)}`;
+      document.getElementById('nav-wallet').innerHTML  = `<span class="wallet-dot"></span>${GPC.format(w.saldo_total)}`;
     } catch {}
   }
 

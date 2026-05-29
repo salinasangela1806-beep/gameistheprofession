@@ -208,15 +208,14 @@
   async function loadWallet() {
     try {
       const w = await API.wallet.get();
-      document.getElementById('saldo-gpc').textContent          = GPC.format(w.saldo_gpc);
-      document.getElementById('saldo-usd').textContent          = `GPC · ≈ ${GPC.toUSD(w.saldo_gpc)}`;
-      document.getElementById('saldo-bloqueado').textContent    = GPC.format(w.saldo_bloqueado_gpc);
-      document.getElementById('patrimonio').textContent         = GPC.format(w.patrimonio_total_gpc || w.saldo_total_gpc);
-      document.getElementById('total-ganado').textContent       = GPC.format(w.total_ganado_gpc);
-      document.getElementById('total-apostado').textContent     = GPC.format(w.total_apostado_gpc);
-      document.getElementById('total-recargado').textContent    = GPC.format(w.total_recargado_gpc);
-      document.getElementById('portafolio-acciones').textContent= GPC.format(w.portafolio_acciones_gpc || 0);
-      document.getElementById('nav-wallet').innerHTML = `<span class="wallet-dot"></span>${GPC.format(w.saldo_gpc)}`;
+      document.getElementById('saldo-gpc').textContent          = GPC.format(w.saldo_total);
+      document.getElementById('saldo-usd').textContent          = `GPC · ≈ ${GPC.toUSD(w.saldo_total)}`;
+      document.getElementById('saldo-bloqueado').textContent    = GPC.format(w.saldo_bloqueado);
+      document.getElementById('patrimonio').textContent         = GPC.format(w.patrimonio_total_gpc || w.saldo_total);
+      document.getElementById('total-ganado').textContent       = GPC.format(w.total_ganado);
+      document.getElementById('total-apostado').textContent     = GPC.format(w.total_apostado);
+      document.getElementById('portafolio-acciones').textContent= GPC.format(w.valor_portafolio_acciones || 0);
+      document.getElementById('nav-wallet').innerHTML = `<span class="wallet-dot"></span>${GPC.format(w.saldo_total)}`;
     } catch {
       document.getElementById('saldo-gpc').textContent = '1.250';
       document.getElementById('saldo-usd').textContent = 'GPC · ≈ $125.00 USD';

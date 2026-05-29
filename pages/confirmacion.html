@@ -372,7 +372,7 @@
     ipo: { ticker:'PRGM', precio_actual:48.5 },
   };
 
-  const MOCK_WALLET = { saldo_gpc: 1250 };
+  const MOCK_WALLET = { saldo_total: 1250 };
 
   // ── FASE 1 ───────────────────────────────────────────────────
   function initFase1() {
@@ -454,13 +454,13 @@
     document.getElementById('rf2-monto').textContent   = GPC.format(monto);
     document.getElementById('rf2-premio').textContent  = GPC.format(Math.round(monto * 2 * 0.95));
     document.getElementById('rf2-fee').textContent     = GPC.format(Math.round(monto * 2 * 0.05));
-    document.getElementById('rf2-saldo-actual').textContent = GPC.format(w.saldo_gpc);
-    document.getElementById('rf2-saldo-tras').textContent   = GPC.format(w.saldo_gpc - monto);
+    document.getElementById('rf2-saldo-actual').textContent = GPC.format(w.saldo_total);
+    document.getElementById('rf2-saldo-tras').textContent   = GPC.format(w.saldo_total - monto);
 
-    const pct = Math.max(0, Math.round((w.saldo_gpc - monto) / w.saldo_gpc * 100));
+    const pct = Math.max(0, Math.round((w.saldo_total - monto) / w.saldo_total * 100));
     document.getElementById('rf2-saldo-bar').style.width = `${pct}%`;
 
-    document.getElementById('gamery-fase2-txt').innerHTML = `He verificado que tienes <strong>${GPC.format(w.saldo_gpc)}</strong> disponibles. Si confirmas, <strong>${GPC.format(monto)}</strong> quedarán bloqueados en escrow. Te quedarán <strong>${GPC.format(w.saldo_gpc - monto)}</strong> disponibles para otros retos. ¿Listo para proceder?`;
+    document.getElementById('gamery-fase2-txt').innerHTML = `He verificado que tienes <strong>${GPC.format(w.saldo_total)}</strong> disponibles. Si confirmas, <strong>${GPC.format(monto)}</strong> quedarán bloqueados en escrow. Te quedarán <strong>${GPC.format(w.saldo_total - monto)}</strong> disponibles para otros retos. ¿Listo para proceder?`;
   }
 
   function volverFase1() { setFase(1); }
