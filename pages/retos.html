@@ -250,7 +250,7 @@
   requireAuth();
 
   const params = new URLSearchParams(window.location.search);
-  const retoId = params.get('id') || '';
+  const retoId = params.get('id') || '0';
   let reto = null;
   let odds = null;
   let jugadorApuestaSeleccionado = null;
