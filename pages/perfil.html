@@ -6,549 +6,1957 @@
   <title>GP – Perfil</title>
   <link rel="stylesheet" href="../css/design-system.css">
   <style>
-    .profile-banner {
-      height: 200px; position: relative; overflow: hidden;
-      background: linear-gradient(135deg,#0a0a0f 0%,#111128 40%,#0d1a2e 100%);
+
+    /* ══════════════════════════════════════════
+       LAYOUT INSTAGRAM
+    ══════════════════════════════════════════ */
+    .ig-root { background:var(--black); min-height:100vh; }
+
+    .ig-main {
+      margin-left: 210px;
+      margin-top:  60px;
+      max-width:   935px;
+      padding:     30px 20px;
     }
-    .banner-glow-1 { position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(240,180,41,0.07);filter:blur(70px);top:-150px;right:-80px; }
-    .banner-glow-2 { position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(0,229,255,0.04);filter:blur(60px);bottom:-80px;left:-40px; }
-    .banner-bg-name { position:absolute;right:-20px;bottom:-30px;font-family:var(--display);font-size:120px;font-weight:800;color:rgba(255,255,255,0.018);letter-spacing:-0.05em;user-select:none;pointer-events:none;white-space:nowrap; }
-    .banner-tags { position:absolute;top:16px;left:16px;display:flex;gap:6px; }
-    .banner-tag { font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:var(--pill);padding:3px 10px;color:var(--t2); }
 
-    .profile-info-row { padding:0 24px 20px;background:var(--void);border-bottom:1px solid var(--border);position:relative; }
-
-    .profile-avatar-wrap { position:absolute;top:-48px;left:24px; }
-    .profile-avatar {
-      width:92px;height:92px;border-radius:50%;
-      background:linear-gradient(135deg,var(--gold),var(--gold-dim));
-      border:3px solid var(--void);
-      display:flex;align-items:center;justify-content:center;
-      font-family:var(--display);font-size:32px;font-weight:800;color:var(--black);
-      position:relative;cursor:pointer;overflow:hidden;
+    /* ══════════════════════════════════════════
+       HEADER DEL PERFIL (fila superior)
+    ══════════════════════════════════════════ */
+    .ig-header {
+      display: grid;
+      grid-template-columns: 168px 1fr;
+      gap: 30px;
+      margin-bottom: 20px;
     }
-    .avatar-ring { position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--gold);opacity:0.25;animation:ring-pulse 3s infinite; }
-    @keyframes ring-pulse { 0%,100%{transform:scale(1);opacity:0.25}50%{transform:scale(1.06);opacity:0.08} }
-    .avatar-upload-btn { position:absolute;bottom:2px;right:2px;width:24px;height:24px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid var(--void);cursor:pointer;z-index:2; }
 
-    .identity { padding-top:56px; }
-    .name-row { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
-    .profile-name { font-family:var(--display);font-size:24px;font-weight:800;line-height:1; }
+    /* Avatar */
+    .ig-avatar-col { display:flex; justify-content:center; padding-top:4px; }
 
-    .profile-actions { display:flex;gap:8px;margin-top:14px;flex-wrap:wrap; }
-    .btn-reto-p { flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;font-family:var(--ui);font-size:13px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:var(--gold);color:var(--black);transition:all var(--t-fast);min-width:120px; }
-    .btn-reto-p:hover { background:var(--gold-lt); }
-    .btn-seguir-p { padding:10px 18px;border-radius:10px;cursor:pointer;font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--t2);transition:all var(--t-fast); }
-    .btn-seguir-p:hover,.btn-seguir-p.active { border-color:var(--gold);color:var(--gold);background:var(--gold-faint); }
+    .ig-avatar-wrap { position:relative; cursor:pointer; }
 
-    .social-stats { display:flex;gap:24px;margin-top:16px; }
-    .ss-item { cursor:pointer; }
-    .ss-val { font-family:var(--display);font-size:18px;font-weight:700;line-height:1; }
-    .ss-label { font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px; }
+    .ig-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--display);
+      font-size: 52px;
+      font-weight: 800;
+      color: var(--black);
+      border: 3px solid var(--void);
+      overflow: hidden;
+      position: relative;
+      transition: filter var(--t-fast);
+    }
 
-    .profile-bio { font-size:14px;color:var(--t2);line-height:1.6;max-width:480px;margin-top:14px; }
-    .game-chips { display:flex;gap:6px;flex-wrap:wrap;margin-top:12px; }
-    .game-chip { font-family:var(--ui);font-size:12px;font-weight:500;background:var(--elevated);border:1px solid var(--border);border-radius:var(--pill);padding:4px 12px;color:var(--t2); }
-    .game-chip.verified { border-color:rgba(240,180,41,0.25);color:var(--gold); }
+    .ig-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+    /* Ring animado (retadores con racha) */
+    .ig-avatar-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--cyan), var(--gold));
+      z-index: -1;
+      animation: ring-spin 4s linear infinite;
+    }
+    @keyframes ring-spin { to { transform: rotate(360deg); } }
+
+    .ig-avatar-ring-inner {
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      background: var(--void);
+      z-index: -1;
+    }
+
+    /* Overlay "Cambiar foto" al hacer hover */
+    .ig-avatar-wrap:hover .ig-avatar-overlay { opacity:1; }
+    .ig-avatar-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--t-fast);
+      gap: 4px;
+    }
+    .ig-avatar-overlay span { font-size: 22px; }
+    .ig-avatar-overlay small {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #fff;
+      letter-spacing: 0.08em;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* Columna de info */
+    .ig-info-col { display:flex; flex-direction:column; gap:16px; }
+
+    .ig-name-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ig-username {
+      font-family: var(--display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* Badge de tipo de usuario */
+    .ig-tipo-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: var(--pill);
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+
+    .tipo-retador   { color:#f0b429; border-color:rgba(240,180,41,0.4); background:rgba(240,180,41,0.06); }
+    .tipo-sponsor   { color:#b388ff; border-color:rgba(179,136,255,0.4); background:rgba(179,136,255,0.06); }
+    .tipo-inversor  { color:#00e5ff; border-color:rgba(0,229,255,0.4);   background:rgba(0,229,255,0.06); }
+    .tipo-espectador{ color:#00e676; border-color:rgba(0,230,118,0.4);   background:rgba(0,230,118,0.06); }
+
+    /* Acciones */
+    .ig-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+    .ig-btn {
+      padding: 8px 20px;
+      border-radius: 10px;
+      font-family: var(--ui);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all var(--t-fast);
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .ig-btn-primary { background:var(--gold); color:var(--black); border-color:var(--gold); }
+    .ig-btn-primary:hover { background:var(--gold-lt); }
+
+    .ig-btn-secondary { background:var(--elevated); color:var(--t1); border-color:var(--border); }
+    .ig-btn-secondary:hover { border-color:var(--muted); background:var(--overlay); }
+
+    .ig-btn-seguir { background:var(--elevated); color:var(--t1); border-color:var(--border); }
+    .ig-btn-seguir.siguiendo { background:var(--gold-faint); color:var(--gold); border-color:rgba(240,180,41,0.3); }
+
+    .ig-btn-icon {
+      width: 38px; height: 38px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .ig-btn-icon:hover { border-color:var(--muted); }
+
+    /* Stats fila */
+    .ig-stats {
+      display: flex;
+      gap: 32px;
+    }
+
+    .ig-stat { cursor:pointer; }
+    .ig-stat-num {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .ig-stat-label {
+      font-family: var(--ui);
+      font-size: 14px;
+      color: var(--t2);
+    }
+
+    /* Nombre display y bio */
+    .ig-nombre-display {
+      font-family: var(--ui);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--t1);
+    }
+
+    .ig-bio {
+      font-family: var(--ui);
+      font-size: 14px;
+      color: var(--t1);
+      line-height: 1.6;
+      white-space: pre-line;
+      max-width: 480px;
+    }
+
+    .ig-bio a { color:var(--gold); text-decoration:none; }
+    .ig-bio a:hover { text-decoration:underline; }
+
+    /* Juegos / links */
+    .ig-links { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+    .ig-link-chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: var(--pill);
+      border: 1px solid var(--border);
+      color: var(--t2);
+      background: var(--elevated);
+      white-space: nowrap;
+    }
+    .ig-link-chip.verified { border-color:rgba(240,180,41,0.3); color:var(--gold); }
 
     /* IPO banner */
-    .ipo-banner { margin:16px 24px;background:linear-gradient(135deg,rgba(240,180,41,0.07),rgba(240,180,41,0.02));border:1px solid rgba(240,180,41,0.2);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap; }
-    .ipo-ticker-label { font-family:var(--mono);font-size:9px;color:var(--gold-dim);letter-spacing:0.12em;margin-bottom:2px; }
-    .ipo-ticker { font-family:var(--display);font-size:26px;font-weight:800;color:var(--gold);letter-spacing:-0.02em; }
-    .ipo-price { font-family:var(--display);font-size:20px;font-weight:700; }
-    .sparkline { display:flex;align-items:flex-end;gap:2px;height:40px;flex:1;min-width:80px; }
-    .spark-bar { background:var(--gold);border-radius:2px 2px 0 0;flex:1;opacity:0.6;min-width:3px;transition:height 0.3s; }
+    .ig-ipo-bar {
+      background: linear-gradient(135deg, rgba(240,180,41,0.07), rgba(240,180,41,0.02));
+      border: 1px solid rgba(240,180,41,0.2);
+      border-radius: var(--r-lg);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
 
-    /* Tabs */
-    .profile-tabs { display:flex;border-bottom:1px solid var(--border);padding:0 24px;background:var(--void);position:sticky;top:60px;z-index:5; }
-    .ptab { padding:12px 16px;font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all var(--t-fast);background:none;border-left:none;border-right:none;border-top:none;display:flex;align-items:center;gap:6px; }
-    .ptab:hover { color:var(--t2); }
-    .ptab.active { color:var(--gold);border-bottom-color:var(--gold); }
-    .tab-count { font-family:var(--mono);font-size:9px;background:var(--elevated);border-radius:var(--pill);padding:1px 6px;color:var(--t3); }
+    /* ══════════════════════════════════════════
+       HIGHLIGHTS (stories) — tipo Instagram
+    ══════════════════════════════════════════ */
+    .ig-highlights {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .ig-highlights::-webkit-scrollbar { display:none; }
 
-    /* Media grid */
-    .media-section { padding:16px 24px; }
-    .highlights-row { display:flex;gap:12px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px; }
-    .hl-item { display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0; }
-    .hl-ring { width:64px;height:64px;border-radius:50%;padding:2px;background:linear-gradient(135deg,var(--gold),var(--cyan)); }
-    .hl-ring-new { background:var(--border); }
-    .hl-inner { width:100%;height:100%;border-radius:50%;background:var(--elevated);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid var(--void); }
-    .hl-label { font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:0.06em;text-align:center;max-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .ig-hl {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
 
-    .media-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:3px; }
-    .media-cell { aspect-ratio:1;border-radius:4px;overflow:hidden;cursor:pointer;position:relative; }
-    .media-cell:hover .media-overlay { opacity:1; }
-    .media-featured { grid-column:span 2;grid-row:span 2;border-radius:8px; }
-    .media-img { width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px; }
-    .media-overlay { position:absolute;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;opacity:0;transition:opacity 0.2s; }
-    .media-stats { display:flex;gap:10px;font-family:var(--mono);font-size:10px;color:#fff; }
-    .video-badge { position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:8px;background:rgba(0,0,0,0.7);color:#fff;border-radius:4px;padding:2px 5px; }
-    .clip-badge  { position:absolute;bottom:6px;left:6px;font-family:var(--mono);font-size:8px;background:var(--gold-faint);border:1px solid rgba(240,180,41,0.3);color:var(--gold);border-radius:4px;padding:2px 6px; }
-    .feat-dot    { position:absolute;top:8px;left:8px;width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 6px var(--gold); }
+    .ig-hl-ring {
+      width: 66px; height: 66px;
+      border-radius: 50%;
+      padding: 2.5px;
+      background: linear-gradient(135deg, var(--gold), var(--cyan));
+    }
 
-    .media-upload { aspect-ratio:1;border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--t-fast); }
-    .media-upload:hover { border-color:var(--gold);background:var(--gold-faint); }
+    .ig-hl-ring.new {
+      background: var(--border);
+    }
 
-    /* Stats grid */
-    .stats-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px 24px; }
-    .sc { background:var(--elevated);border:1px solid var(--border);border-radius:12px;padding:14px; }
-    .sc-label { font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px; }
-    .sc-val { font-family:var(--display);font-size:26px;font-weight:700;line-height:1; }
-    .sc-bar-wrap { height:4px;background:var(--border);border-radius:var(--pill);overflow:hidden;margin:8px 0 4px; }
-    .sc-bar { height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:var(--pill);transition:width 1s ease; }
-    .sc-sub { font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px; }
+    .ig-hl-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: var(--elevated);
+      border: 2.5px solid var(--void);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      overflow: hidden;
+    }
+
+    .ig-hl-label {
+      font-family: var(--ui);
+      font-size: 11px;
+      color: var(--t1);
+      max-width: 66px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ══════════════════════════════════════════
+       TABS
+    ══════════════════════════════════════════ */
+    .ig-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ig-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--t3);
+      cursor: pointer;
+      border-top: 2px solid transparent;
+      transition: all var(--t-fast);
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .ig-tab:hover { color:var(--t2); }
+    .ig-tab.active { color:var(--t1); border-top-color:var(--t1); }
+
+    /* ══════════════════════════════════════════
+       GRID DE POSTS (tab principal)
+    ══════════════════════════════════════════ */
+    .ig-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      margin-top: 3px;
+    }
+
+    .ig-post {
+      aspect-ratio: 1;
+      background: var(--elevated);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .ig-post:hover .ig-post-overlay { opacity:1; }
+
+    .ig-post-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    /* Post grande (ocupa 2×2) */
+    .ig-post-featured {
+      grid-column: span 2;
+      grid-row:    span 2;
+    }
+
+    .ig-post-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      opacity: 0;
+      transition: opacity var(--t-fast);
+    }
+
+    .ig-post-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Badges sobre el post */
+    .ig-post-badge {
+      position: absolute;
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 3px 7px;
+      border-radius: 4px;
+    }
+
+    .ig-post-badge-video { top:8px; right:8px; background:rgba(0,0,0,0.7); color:#fff; }
+    .ig-post-badge-reto  { bottom:8px; left:8px; background:var(--gold-faint); color:var(--gold); border:1px solid rgba(240,180,41,0.3); }
+    .ig-post-badge-feat  { top:8px; left:8px; width:8px; height:8px; border-radius:50%; background:var(--gold); box-shadow:0 0 6px var(--gold); padding:0; }
+
+    /* Upload cell */
+    .ig-post-upload {
+      aspect-ratio: 1;
+      border: 2px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .ig-post-upload:hover { border-color:var(--gold); background:var(--gold-faint); }
+
+    /* ══════════════════════════════════════════
+       TABS ESPECÍFICOS POR TIPO DE USUARIO
+    ══════════════════════════════════════════ */
+
+    /* Stats tab */
+    .stats-grid-ig {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 20px 0;
+    }
+
+    .stat-card-ig {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      transition: all var(--t-fast);
+    }
+    .stat-card-ig:hover { border-color:var(--gold-dim); }
+
+    .sc-label { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--t3); margin-bottom:6px; }
+    .sc-val   { font-family:var(--display); font-size:28px; font-weight:700; line-height:1; }
+    .sc-sub   { font-family:var(--mono); font-size:10px; color:var(--t3); margin-top:5px; }
+    .sc-bar   { height:4px; background:var(--border); border-radius:var(--pill); overflow:hidden; margin:8px 0 4px; }
+    .sc-fill  { height:100%; background:linear-gradient(90deg,var(--gold),var(--green)); border-radius:var(--pill); }
 
     /* Retos tab */
-    .retos-list { padding:12px 24px; }
-    .reto-row { display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;transition:background var(--t-fast);margin-bottom:4px; }
-    .reto-row:hover { background:var(--elevated); }
-    .reto-result { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:800;flex-shrink:0; }
-    .res-w { background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2); }
-    .res-l { background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.2); }
+    .reto-row-ig {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background var(--t-fast);
+      border-bottom: 1px solid var(--border);
+    }
+    .reto-row-ig:last-child { border-bottom:none; }
+    .reto-row-ig:hover { background:var(--elevated); }
 
-    /* Right panel */
-    .profile-layout { display:flex;gap:24px; }
-    .profile-main { flex:1;min-width:0; }
-    .profile-right { width:260px;flex-shrink:0; }
-    .gamery-card { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px; }
-    .sug-item { display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer;transition:background var(--t-fast);margin-bottom:2px; }
-    .sug-item:hover { background:var(--elevated); }
-    .sug-btn { font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:var(--pill);border:1px solid var(--gold);color:var(--gold);background:var(--gold-faint);cursor:pointer;white-space:nowrap;transition:all var(--t-fast); }
-    .sug-btn:hover { background:var(--gold-glow); }
-    .upload-cta { margin-top:16px;background:var(--gold-faint);border:1px solid rgba(240,180,41,0.15);border-radius:12px;padding:14px; }
+    .rr-result {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--display); font-size: 12px; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .rr-w { background:rgba(0,230,118,0.1); color:var(--green); border:1px solid rgba(0,230,118,0.2); }
+    .rr-l { background:rgba(255,61,87,0.1); color:var(--red);   border:1px solid rgba(255,61,87,0.2); }
+    .rr-p { background:rgba(240,180,41,0.1); color:var(--gold); border:1px solid rgba(240,180,41,0.2); }
+
+    /* Apuestas tab (sponsor) */
+    .apuesta-row {
+      display:flex; align-items:center; gap:12px;
+      padding:12px; border-bottom:1px solid var(--border);
+      cursor:pointer; transition:background var(--t-fast);
+    }
+    .apuesta-row:hover { background:var(--elevated); }
+
+    /* Portafolio tab (inversor) */
+    .port-row {
+      display:flex; align-items:center; gap:12px;
+      padding:12px; border-bottom:1px solid var(--border);
+    }
+
+    /* ══════════════════════════════════════════
+       POPUP DE EDICIÓN (estilo Instagram)
+    ══════════════════════════════════════════ */
+    .edit-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fade-in 0.2s ease;
+    }
+
+    .edit-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 92vh;
+      overflow-y: auto;
+      animation: slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    }
+
+    .edit-modal::-webkit-scrollbar { width:4px; }
+    .edit-modal::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+    /* Header del modal */
+    .edit-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      z-index: 1;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .edit-modal-title {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .edit-modal-close {
+      width: 32px; height: 32px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--t-fast);
+      color: var(--t2);
+    }
+    .edit-modal-close:hover { border-color:var(--red); color:var(--red); }
+
+    /* Cuerpo del modal */
+    .edit-modal-body { padding: 24px; }
+
+    /* Sección de avatar en el modal */
+    .edit-avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .edit-avatar-preview {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--display); font-size: 34px; font-weight: 800;
+      color: var(--black);
+      overflow: hidden;
+      border: 3px solid var(--border);
+      flex-shrink: 0;
+    }
+    .edit-avatar-preview img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+    .edit-avatar-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+    .edit-avatar-btn-upload {
+      padding: 8px 18px;
+      border-radius: var(--r-md);
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--ui);
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all var(--t-fast);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .edit-avatar-btn-upload:hover { background:var(--gold-lt); }
+
+    .edit-avatar-btn-remove {
+      padding: 8px 18px;
+      border-radius: var(--r-md);
+      background: transparent;
+      color: var(--red);
+      font-family: var(--ui);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(255,61,87,0.3);
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .edit-avatar-btn-remove:hover { background:rgba(255,61,87,0.08); }
+
+    .edit-avatar-note {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--t3);
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    /* Campos del formulario */
+    .edit-field { margin-bottom: 20px; }
+
+    .edit-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--t3);
+      margin-bottom: 8px;
+    }
+
+    .edit-label-hint {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--t3);
+    }
+
+    .edit-input {
+      width: 100%;
+      background: var(--void);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      color: var(--t1);
+      font-family: var(--ui);
+      font-size: 15px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    }
+
+    .edit-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-faint);
+    }
+
+    .edit-input::placeholder { color: var(--t3); }
+
+    .edit-input.error { border-color: var(--red); }
+    .edit-input.ok    { border-color: var(--green); }
+
+    .edit-textarea {
+      width: 100%;
+      background: var(--void);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      color: var(--t1);
+      font-family: var(--ui);
+      font-size: 14px;
+      padding: 11px 14px;
+      outline: none;
+      resize: none;
+      line-height: 1.6;
+      transition: border-color var(--t-fast);
+    }
+    .edit-textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px var(--gold-faint); }
+
+    .char-count {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--t3);
+      text-align: right;
+      margin-top: 4px;
+    }
+    .char-count.warn { color: var(--gold); }
+    .char-count.over { color: var(--red); }
+
+    /* Campo username con @ prefix */
+    .edit-input-prefix-wrap { position:relative; }
+    .edit-input-prefix {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--t3);
+      pointer-events: none;
+      user-select: none;
+    }
+    .edit-input-with-prefix { padding-left: 28px; }
+
+    /* Disponibilidad del username */
+    .username-status {
+      font-family: var(--mono);
+      font-size: 10px;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .username-status.checking { color:var(--t3); }
+    .username-status.available{ color:var(--green); }
+    .username-status.taken    { color:var(--red); }
+
+    /* Selector de tipo de usuario */
+    .tipo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .tipo-option {
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: var(--elevated);
+      cursor: pointer;
+      transition: all var(--t-fast);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tipo-option:hover { border-color:var(--muted); }
+
+    .tipo-option.selected { border-color:rgba(240,180,41,0.4); background:var(--gold-faint); }
+
+    .tipo-option-icon { font-size:20px; flex-shrink:0; }
+    .tipo-option-name { font-family:var(--ui); font-size:13px; font-weight:700; }
+    .tipo-option-desc { font-family:var(--mono); font-size:9px; color:var(--t3); margin-top:2px; }
+    .tipo-option-radio {
+      width:16px; height:16px; border-radius:50%;
+      border:2px solid var(--border); margin-left:auto; flex-shrink:0;
+      transition:all var(--t-fast);
+    }
+    .tipo-option.selected .tipo-option-radio {
+      background:var(--gold); border-color:var(--gold);
+    }
+
+    /* Footer del modal */
+    .edit-modal-footer {
+      padding: 18px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+      border-radius: 0 0 20px 20px;
+    }
+
+    .edit-save-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--r-md);
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--ui);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .edit-save-btn:hover:not(:disabled) { background:var(--gold-lt); }
+    .edit-save-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .edit-cancel-btn {
+      padding: 12px 24px;
+      border-radius: var(--r-md);
+      background: transparent;
+      color: var(--t2);
+      font-family: var(--ui);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .edit-cancel-btn:hover { border-color:var(--muted); color:var(--t1); }
+
+    /* ══════════════════════════════════════════
+       VIEWER DE POST (popup al clickear imagen)
+    ══════════════════════════════════════════ */
+    .post-viewer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fade-in 0.2s ease;
+    }
+
+    .post-viewer {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: slide-up 0.25s ease;
+    }
+
+    .post-viewer-img {
+      background: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      min-height: 400px;
+    }
+
+    .post-viewer-side { display:flex; flex-direction:column; border-left:1px solid var(--border); }
+    .pv-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .pv-body   { flex:1; padding:16px; overflow-y:auto; }
+    .pv-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .pv-like-btn {
+      background:none; border:none; font-size:22px; cursor:pointer;
+      transition:transform var(--t-fast);
+    }
+    .pv-like-btn:hover { transform:scale(1.2); }
+    .pv-like-count { font-family:var(--display); font-size:14px; font-weight:700; }
+
+    .pv-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 36px; height: 36px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--t1); font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .ig-main { margin-left:0; padding:16px; }
+      .ig-header { grid-template-columns:1fr; text-align:center; }
+      .ig-avatar-col { justify-content:center; }
+      .ig-stats { justify-content:center; }
+      .ig-actions { justify-content:center; }
+      .ig-name-row { justify-content:center; }
+      .post-viewer { grid-template-columns:1fr; }
+      .post-viewer-side { display:none; }
+      .stats-grid-ig { grid-template-columns:repeat(2,1fr); }
+    }
   </style>
 </head>
-<body>
+<body class="ig-root">
 
+<!-- Navbar -->
 <nav class="navbar">
   <a href="/" class="nav-logo">G<span>P</span></a>
-  <div style="font-family:var(--mono);font-size:12px;color:var(--t3);margin-left:8px">/ Perfil</div>
   <div class="nav-right">
     <a href="wallet.html" class="wallet-pill" id="nav-wallet"><span class="wallet-dot"></span>— GPC</a>
     <a href="perfil.html" class="nav-avatar" id="nav-avatar">GP</a>
   </div>
 </nav>
 
-<div class="app-shell" style="grid-template-rows:auto">
-  <nav class="sidebar">
-    <div class="sidebar-section">Principal</div>
-    <a href="feed.html"    class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Arena</span></a>
-    <a href="perfil.html"  class="sidebar-item active"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
-    <a href="retos.html"   class="sidebar-item"><span class="sidebar-icon">🏆</span><span class="sidebar-label">Mis Retos</span></a>
-    <a href="wallet.html"  class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
-    <div class="sidebar-section">Mercado</div>
-    <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
-    <div class="sidebar-section">Ayuda</div>
-    <a href="gamery.html"  class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
-  </nav>
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-section">Principal</div>
+  <a href="feed.html"   class="sidebar-item"><span class="sidebar-icon">⚔️</span><span class="sidebar-label">Matchmaking</span></a>
+  <a href="arena.html"  class="sidebar-item"><span class="sidebar-icon">🏟️</span><span class="sidebar-label">GP Arena</span></a>
+  <a href="perfil.html" class="sidebar-item active"><span class="sidebar-icon">👤</span><span class="sidebar-label">Mi Perfil</span></a>
+  <a href="retos.html"  class="sidebar-item"><span class="sidebar-icon">🏆</span><span class="sidebar-label">Mis Retos</span></a>
+  <a href="wallet.html" class="sidebar-item"><span class="sidebar-icon">🪙</span><span class="sidebar-label">Wallet</span></a>
+  <div class="sidebar-section">Mercado</div>
+  <a href="mercado.html" class="sidebar-item"><span class="sidebar-icon">📈</span><span class="sidebar-label">Bolsa GP</span></a>
+  <div class="sidebar-section">Ayuda</div>
+  <a href="gamery.html"  class="sidebar-item"><span class="sidebar-icon">🤖</span><span class="sidebar-label">Gamery IA</span></a>
+</nav>
 
-  <main class="main-content" style="padding:0">
-    <div class="profile-layout" style="align-items:flex-start">
-      <div class="profile-main">
+<!-- ════════════════════════════════════════════
+     MAIN — Perfil estilo Instagram
+════════════════════════════════════════════ -->
+<main class="ig-main">
 
-        <!-- Banner -->
-        <div class="profile-banner" id="profile-banner">
-          <div class="banner-glow-1"></div>
-          <div class="banner-glow-2"></div>
-          <div class="banner-bg-name" id="banner-bg-name">GAMER</div>
-          <div class="banner-tags" id="banner-tags"></div>
+  <!-- HEADER DEL PERFIL -->
+  <div class="ig-header">
+
+    <!-- Avatar -->
+    <div class="ig-avatar-col">
+      <div class="ig-avatar-wrap" id="avatar-wrap" onclick="esMiPerfil && abrirEditar()">
+        <div id="avatar-ring-outer" style="display:none">
+          <div class="ig-avatar-ring"></div>
+          <div class="ig-avatar-ring-inner"></div>
         </div>
-
-        <!-- Info row -->
-        <div class="profile-info-row">
-          <div class="profile-avatar-wrap">
-            <div class="profile-avatar" id="profile-avatar">
-              <div class="avatar-ring"></div>
-              <span id="avatar-initials">GP</span>
-              <div class="avatar-upload-btn" id="avatar-upload-btn" style="display:none" onclick="document.getElementById('avatar-file').click()">📷</div>
-            </div>
-            <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
-          </div>
-
-          <div class="identity">
-            <div class="name-row">
-              <h1 class="profile-name" id="profile-name">Cargando...</h1>
-              <span class="badge badge-gold" id="badge-verified" style="display:none">✓ VERIFICADO</span>
-              <span class="badge badge-cyan" id="badge-division" style="display:none"></span>
-            </div>
-            <div class="font-mono text-faint" style="font-size:11px;margin-top:3px" id="profile-handle">@—</div>
-            <div class="font-mono text-faint" style="font-size:10px;margin-top:3px" id="profile-location">📍 —</div>
-          </div>
-
-          <div class="profile-actions" id="profile-actions"></div>
-
-          <p class="profile-bio" id="profile-bio"></p>
-          <div class="game-chips" id="game-chips"></div>
-
-          <div class="social-stats">
-            <div class="ss-item"><div class="ss-val" id="stat-seguidores">—</div><div class="ss-label">Seguidores</div></div>
-            <div class="ss-item"><div class="ss-val" id="stat-siguiendo">—</div><div class="ss-label">Siguiendo</div></div>
-            <div class="ss-item"><div class="ss-val" id="stat-retos">—</div><div class="ss-label">Retos</div></div>
-            <div class="ss-item"><div class="ss-val text-green" id="stat-wr">—</div><div class="ss-label">Winrate</div></div>
-          </div>
+        <div class="ig-avatar" id="ig-avatar-el">
+          <span id="avatar-initials">GP</span>
         </div>
-
-        <!-- IPO banner -->
-        <div class="ipo-banner" id="ipo-banner" style="display:none">
-          <div><div class="ipo-ticker-label">Ticker</div><div class="ipo-ticker" id="ipo-ticker">$—</div></div>
-          <div>
-            <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:2px">Precio</div>
-            <div class="ipo-price"><span id="ipo-precio">—</span> <span style="font-size:13px;color:var(--t3)">GPC</span></div>
-            <div style="font-family:var(--mono);font-size:11px" id="ipo-change"></div>
-          </div>
-          <div class="sparkline" id="sparkline"></div>
-          <div style="text-align:right">
-            <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:3px">Market Cap</div>
-            <div style="font-family:var(--display);font-size:16px;font-weight:700" id="ipo-mcap">—</div>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="window.location.href='mercado.html'">📈 Invertir</button>
+        <div class="ig-avatar-overlay" id="avatar-overlay" style="display:none">
+          <span>📷</span>
+          <small>Cambiar<br>foto</small>
         </div>
+      </div>
+    </div>
 
-        <!-- Tabs -->
-        <div class="profile-tabs">
-          <button class="ptab active" onclick="showTab('media',this)">⬛ Media <span class="tab-count" id="media-count">0</span></button>
-          <button class="ptab" onclick="showTab('stats',this)">📊 Stats</button>
-          <button class="ptab" onclick="showTab('retos',this)">⚔️ Retos <span class="tab-count" id="retos-count">0</span></button>
+    <!-- Info -->
+    <div class="ig-info-col">
+
+      <!-- Username + tipo + acciones -->
+      <div class="ig-name-row">
+        <span class="ig-username" id="ig-username">—</span>
+        <span class="ig-tipo-badge" id="ig-tipo-badge">—</span>
+        <div style="display:flex;gap:8px;align-items:center" id="ig-action-btns"></div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="ig-stats">
+        <div class="ig-stat" onclick="mostrarSeguidores('retos')">
+          <span class="ig-stat-num" id="ig-stat-retos">—</span>
+          <span class="ig-stat-label"> retos</span>
         </div>
-
-        <!-- Tab: Media -->
-        <div id="tab-media" class="media-section">
-          <div class="highlights-row">
-            <div class="hl-item" id="hl-new" style="display:none" onclick="document.getElementById('media-file').click()">
-              <div class="hl-ring hl-ring-new"><div class="hl-inner">+</div></div>
-              <div class="hl-label">Nuevo</div>
-            </div>
-            <div class="hl-item"><div class="hl-ring"><div class="hl-inner">🏆</div></div><div class="hl-label">Top Retos</div></div>
-            <div class="hl-item"><div class="hl-ring"><div class="hl-inner">⚽</div></div><div class="hl-label">eFootball</div></div>
-            <div class="hl-item"><div class="hl-ring"><div class="hl-inner">🎬</div></div><div class="hl-label">Clips</div></div>
-            <div class="hl-item"><div class="hl-ring"><div class="hl-inner">💪</div></div><div class="hl-label">Setup</div></div>
-          </div>
-          <div class="media-grid" id="media-grid"></div>
-          <input type="file" id="media-file" accept="image/*,video/*" style="display:none" onchange="uploadMedia(this)">
+        <div class="ig-stat" onclick="mostrarSeguidores('seguidores')">
+          <span class="ig-stat-num" id="ig-stat-seguidores">—</span>
+          <span class="ig-stat-label"> seguidores</span>
         </div>
-
-        <!-- Tab: Stats -->
-        <div id="tab-stats" style="display:none" class="stats-grid">
-          <div class="sc">
-            <div class="sc-label">Winrate global</div>
-            <div class="sc-val text-green" id="sc-wr">—</div>
-            <div class="sc-bar-wrap"><div class="sc-bar" id="sc-wr-bar" style="width:0%"></div></div>
-            <div class="sc-sub" id="sc-wr-sub">—</div>
-          </div>
-          <div class="sc">
-            <div class="sc-label">Ganancias totales</div>
-            <div class="sc-val text-green" id="sc-ganancias">—</div>
-            <div class="sc-sub">GPC acumulados</div>
-          </div>
-          <div class="sc">
-            <div class="sc-label">Racha actual</div>
-            <div class="sc-val text-cyan" id="sc-racha">—</div>
-            <div class="sc-sub" id="sc-racha-max">Máxima: —</div>
-          </div>
-          <div class="sc">
-            <div class="sc-label">Ranking global</div>
-            <div class="sc-val" id="sc-ranking">—</div>
-            <div class="sc-sub">Top LATAM</div>
-          </div>
-          <div class="sc">
-            <div class="sc-label">Mayor apuesta</div>
-            <div class="sc-val text-gold" id="sc-mayor">—</div>
-            <div class="sc-sub">GPC en un reto</div>
-          </div>
-          <div class="sc">
-            <div class="sc-label">Nivel / XP</div>
-            <div class="sc-val" id="sc-nivel">—</div>
-            <div class="sc-bar-wrap"><div class="sc-bar" id="sc-xp-bar" style="width:0%"></div></div>
-            <div class="sc-sub" id="sc-xp-sub">— XP</div>
-          </div>
-        </div>
-
-        <!-- Tab: Retos -->
-        <div id="tab-retos" style="display:none" class="retos-list" id="retos-hist"></div>
-
-      </div><!-- /profile-main -->
-
-      <!-- Right -->
-      <div class="profile-right" style="padding:24px 0 24px 0;position:sticky;top:60px">
-        <div class="gamery-card">
-          <div class="flex items-center gap-3 mb-2">
-            <div style="width:30px;height:30px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:14px">🤖</div>
-            <div>
-              <div style="font-family:var(--display);font-size:13px;font-weight:700">Gamery</div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--green)">● Online</div>
-            </div>
-          </div>
-          <div style="font-size:12px;color:var(--t2);line-height:1.5;background:var(--elevated);border-radius:8px;padding:10px" id="gamery-analysis">Analizando perfil...</div>
-        </div>
-
-        <div class="rp-title">Jugadores similares</div>
-        <div id="sugeridos"></div>
-
-        <div class="upload-cta" id="upload-cta" style="display:none">
-          <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--gold);margin-bottom:4px">📸 Sube tu contenido</div>
-          <div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.5">Fotos y videos de tus mejores jugadas.</div>
-          <button class="btn btn-secondary btn-sm btn-full" onclick="document.getElementById('media-file').click()">📤 Subir foto / video</button>
+        <div class="ig-stat" onclick="mostrarSeguidores('siguiendo')">
+          <span class="ig-stat-num" id="ig-stat-siguiendo">—</span>
+          <span class="ig-stat-label"> siguiendo</span>
         </div>
       </div>
 
-    </div><!-- /profile-layout -->
-  </main>
+      <!-- Nombre real + bio -->
+      <div>
+        <div class="ig-nombre-display" id="ig-nombre-display">—</div>
+        <div class="ig-bio" id="ig-bio"></div>
+        <div class="ig-links" id="ig-links"></div>
+      </div>
+
+      <!-- IPO bar (si tiene IPO) -->
+      <div class="ig-ipo-bar" id="ig-ipo-bar" style="display:none">
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--gold-dim);letter-spacing:0.1em;margin-bottom:2px">TICKER</div>
+          <div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--gold)" id="ipo-ticker">$—</div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:2px">Precio acción</div>
+          <div style="font-family:var(--display);font-size:18px;font-weight:700" id="ipo-precio">—</div>
+          <div id="ipo-change" style="font-family:var(--mono);font-size:10px"></div>
+        </div>
+        <div id="ipo-sparkline" style="display:flex;align-items:flex-end;gap:2px;height:36px;flex:1;min-width:60px;opacity:0.6"></div>
+        <div style="text-align:right">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">Market Cap</div>
+          <div style="font-family:var(--display);font-size:14px;font-weight:700" id="ipo-mcap">—</div>
+        </div>
+        <button class="ig-btn ig-btn-primary" style="padding:7px 14px;font-size:12px" onclick="window.location.href='mercado.html'">📈 Invertir</button>
+      </div>
+
+    </div><!-- /ig-info-col -->
+  </div><!-- /ig-header -->
+
+  <!-- HIGHLIGHTS (stories) -->
+  <div class="ig-highlights" id="ig-highlights">
+    <div class="ig-hl" id="hl-nuevo" style="display:none" onclick="document.getElementById('media-file-input').click()">
+      <div class="ig-hl-ring new"><div class="ig-hl-inner">＋</div></div>
+      <div class="ig-hl-label">Nuevo</div>
+    </div>
+    <!-- Highlights dinámicos -->
+  </div>
+
+  <!-- TABS -->
+  <div class="ig-tabs">
+    <button class="ig-tab active" id="tab-btn-posts" onclick="showTab('posts',this)">
+      ⬛ Posts
+    </button>
+    <button class="ig-tab" id="tab-btn-stats" onclick="showTab('stats',this)" id="tab-stats-btn">
+      📊 Stats
+    </button>
+    <!-- Tab dinámico según tipo de usuario -->
+    <button class="ig-tab" id="tab-btn-especial" onclick="showTab('especial',this)">
+      ⚔️ Retos
+    </button>
+    <button class="ig-tab" id="tab-btn-tagged" onclick="showTab('tagged',this)">
+      🏷️ Etiquetas
+    </button>
+  </div>
+
+  <!-- TAB: POSTS (grid de media) -->
+  <div id="tab-posts">
+    <div class="ig-grid" id="ig-grid">
+      <div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--t3)">
+        <div class="loading-spinner" style="margin:0 auto 12px"></div>
+        Cargando posts...
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: STATS -->
+  <div id="tab-stats" style="display:none">
+    <div class="stats-grid-ig" id="stats-grid-content"></div>
+  </div>
+
+  <!-- TAB: ESPECIAL (retos/apuestas/portafolio según tipo) -->
+  <div id="tab-especial" style="display:none">
+    <div id="tab-especial-content"></div>
+  </div>
+
+  <!-- TAB: TAGGED -->
+  <div id="tab-tagged" style="display:none">
+    <div style="padding:60px;text-align:center;color:var(--t3)">
+      <div style="font-size:48px;margin-bottom:12px">🏷️</div>
+      <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Sin etiquetas aún</div>
+      <div style="font-size:13px">Cuando otros te etiqueten en clips de retos aparecerá aquí</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Input file oculto para subir media -->
+<input type="file" id="media-file-input" accept="image/*,video/*" style="display:none" onchange="subirMedia(this)">
+<input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="subirAvatarDesdeInput(this)">
+
+<!-- ════════════════════════════════════════════
+     POPUP DE EDICIÓN DE PERFIL
+════════════════════════════════════════════ -->
+<div id="edit-overlay" class="edit-overlay" style="display:none" onclick="if(event.target===this)cerrarEditar()">
+  <div class="edit-modal">
+
+    <!-- Header -->
+    <div class="edit-modal-header">
+      <div class="edit-modal-title">✏️ Editar perfil</div>
+      <button class="edit-modal-close" onclick="cerrarEditar()">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="edit-modal-body">
+
+      <!-- FOTO DE PERFIL -->
+      <div class="edit-avatar-section">
+        <div class="edit-avatar-preview" id="edit-avatar-preview">
+          <span id="edit-avatar-initials">GP</span>
+        </div>
+        <div class="edit-avatar-btns">
+          <button class="edit-avatar-btn-upload" onclick="document.getElementById('avatar-file-input').click()">
+            📷 Cambiar foto
+          </button>
+          <button class="edit-avatar-btn-remove" onclick="quitarAvatar()">Quitar foto</button>
+        </div>
+        <div class="edit-avatar-note">
+          JPG, PNG o GIF · Máximo 5MB<br>
+          Recomendado: cuadrada 400×400 px
+        </div>
+      </div>
+
+      <!-- NOMBRE DE USUARIO -->
+      <div class="edit-field">
+        <div class="edit-label">
+          Nombre de usuario
+          <span class="edit-label-hint">Solo letras, números y _</span>
+        </div>
+        <div class="edit-input-prefix-wrap">
+          <span class="edit-input-prefix">@</span>
+          <input
+            class="edit-input edit-input-with-prefix"
+            id="edit-username"
+            type="text"
+            placeholder="tu_username"
+            maxlength="30"
+            oninput="checkUsername(this.value)"
+          >
+        </div>
+        <div class="username-status" id="username-status"></div>
+      </div>
+
+      <!-- NOMBRE PARA MOSTRAR -->
+      <div class="edit-field">
+        <div class="edit-label">Nombre para mostrar</div>
+        <input
+          class="edit-input"
+          id="edit-nombre"
+          type="text"
+          placeholder="Ej: ProGamer CO"
+          maxlength="50"
+          oninput="countChars(this,'nombre-count',50)"
+        >
+        <div class="char-count" id="nombre-count">0 / 50</div>
+      </div>
+
+      <!-- BIOGRAFÍA -->
+      <div class="edit-field">
+        <div class="edit-label">
+          Biografía
+          <span class="edit-label-hint">Cuéntale al mundo quién eres</span>
+        </div>
+        <textarea
+          class="edit-textarea"
+          id="edit-bio"
+          rows="4"
+          placeholder="Ej: Top 3 eFootball LATAM 🏆 · CS2 Faceit 8 · Retador profesional en GP desde 2024 · 'El skill no miente'"
+          maxlength="200"
+          oninput="countChars(this,'bio-count',200)"
+        ></textarea>
+        <div class="char-count" id="bio-count">0 / 200</div>
+      </div>
+
+      <!-- TIPO DE PERFIL -->
+      <div class="edit-field">
+        <div class="edit-label">Tipo de perfil</div>
+        <div class="tipo-grid">
+          <div class="tipo-option selected" data-tipo="retador" onclick="selectTipo('retador',this)">
+            <div class="tipo-option-icon">⚔️</div>
+            <div>
+              <div class="tipo-option-name">Retador</div>
+              <div class="tipo-option-desc">Compito en retos</div>
+            </div>
+            <div class="tipo-option-radio"></div>
+          </div>
+          <div class="tipo-option" data-tipo="sponsor" onclick="selectTipo('sponsor',this)">
+            <div class="tipo-option-icon">💰</div>
+            <div>
+              <div class="tipo-option-name">Sponsor</div>
+              <div class="tipo-option-desc">Apuesto en retos</div>
+            </div>
+            <div class="tipo-option-radio"></div>
+          </div>
+          <div class="tipo-option" data-tipo="inversor" onclick="selectTipo('inversor',this)">
+            <div class="tipo-option-icon">📈</div>
+            <div>
+              <div class="tipo-option-name">Inversor</div>
+              <div class="tipo-option-desc">Compro acciones</div>
+            </div>
+            <div class="tipo-option-radio"></div>
+          </div>
+          <div class="tipo-option" data-tipo="espectador" onclick="selectTipo('espectador',this)">
+            <div class="tipo-option-icon">👁️</div>
+            <div>
+              <div class="tipo-option-name">Espectador</div>
+              <div class="tipo-option-desc">Veo retos en vivo</div>
+            </div>
+            <div class="tipo-option-radio"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /edit-modal-body -->
+
+    <!-- Footer con botones -->
+    <div class="edit-modal-footer">
+      <button class="edit-cancel-btn" onclick="cerrarEditar()">Cancelar</button>
+      <button class="edit-save-btn" id="edit-save-btn" onclick="guardarPerfil()">
+        Guardar cambios
+      </button>
+    </div>
+
+  </div><!-- /edit-modal -->
+</div><!-- /edit-overlay -->
+
+<!-- ════════════════════════════════════════════
+     VIEWER DE POST (popup al clickear imagen)
+════════════════════════════════════════════ -->
+<div id="post-viewer" class="post-viewer-overlay" style="display:none" onclick="if(event.target===this)cerrarViewer()">
+  <button class="pv-close" onclick="cerrarViewer()">✕</button>
+  <div class="post-viewer">
+    <div class="post-viewer-img" id="pv-img">🎮</div>
+    <div class="post-viewer-side">
+      <div class="pv-header">
+        <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:13px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--black)" id="pv-av">GP</div>
+        <div>
+          <div style="font-family:var(--display);font-size:14px;font-weight:700" id="pv-username">—</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--t3)" id="pv-fecha">—</div>
+        </div>
+        <button id="pv-delete-btn" style="margin-left:auto;background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;display:none" onclick="eliminarPostActivo()">🗑️</button>
+      </div>
+      <div class="pv-body">
+        <div style="font-family:var(--ui);font-size:14px;line-height:1.6" id="pv-desc">—</div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap" id="pv-tags"></div>
+      </div>
+      <div class="pv-footer">
+        <button class="pv-like-btn" id="pv-like-btn" onclick="toggleLikeViewer()">🤍</button>
+        <span class="pv-like-count" id="pv-likes">0</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-left:auto" id="pv-vistas">0 vistas</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <button class="gamery-fab" onclick="window.location.href='gamery.html'">🤖<div class="gamery-fab-pulse"></div></button>
 
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
 <script src="../js/api.js"></script>
 <script>
   requireAuth();
 
-  const GRADIENTS = ['linear-gradient(135deg,#1a1a2e,#16213e)','linear-gradient(135deg,#0d1b2a,#1b263b)','linear-gradient(135deg,#1a0a00,#2d1b00)','linear-gradient(135deg,#000d1a,#001f3f)','linear-gradient(135deg,#0a001f,#1a0050)','linear-gradient(135deg,#001a00,#003300)','linear-gradient(135deg,#1a0010,#330020)','linear-gradient(135deg,#1a1000,#332100)'];
-  const EMOJIS_MEDIA = ['⚽','🎯','🏆','🔫','💻','🎮','⚡','🌟'];
+  /* ─── Estado global ───────────────────────────────────── */
+  let perfil      = null;
+  let mediaItems  = [];
+  let esMiPerfil  = false;
+  let postActivo  = null;
+  let tipoEditando = 'retador';
+  let usernameDisponible = true;
+  let usernameTimer = null;
 
-  const SUGERIDOS = [
-    {name:'FootballGod_PE',av:'FG',color:'linear-gradient(135deg,#b388ff,#7c4dff)',tc:'#fff',sub:'eFootball · 89% WR'},
-    {name:'ElClasico_MX',  av:'EK',color:'linear-gradient(135deg,#ff3d57,#880000)',tc:'#fff',sub:'eFootball · 71% WR'},
-    {name:'RocketKing_BR', av:'RK',color:'linear-gradient(135deg,#00e5ff,#0096aa)',tc:'#000',sub:'Rocket · 78% WR'},
-    {name:'NightLord_CL',  av:'NL',color:'linear-gradient(135deg,#00e676,#00a152)',tc:'#000',sub:'CS2 · 76% WR'},
+  /* ─── Gradientes por username (determinista) ──────────── */
+  const GRADIENTS = [
+    ['linear-gradient(135deg,#f0b429,#c4911a)', '#000'],
+    ['linear-gradient(135deg,#00e5ff,#0096aa)', '#000'],
+    ['linear-gradient(135deg,#b388ff,#7c4dff)', '#fff'],
+    ['linear-gradient(135deg,#ff3d57,#b71c1c)', '#fff'],
+    ['linear-gradient(135deg,#00e676,#00a152)', '#000'],
+    ['linear-gradient(135deg,#ffd166,#f0b429)', '#000'],
   ];
 
-  let perfil = null;
-  let esMiPerfil = false;
-  let mediaItems = [];
-  let retosHistorial = [];
-
-  async function doLogout() {
-    try { await API.auth.logout(); } catch {}
-    Auth.clearToken();
-    window.location.href = '/pages/login.html';
+  function avatarGradient(username = '') {
+    const idx = username.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % GRADIENTS.length;
+    return GRADIENTS[idx];
   }
 
+  const TIPO_CONFIG = {
+    retador:   { label:'Retador',    icon:'⚔️', class:'tipo-retador',    tabIcon:'⚔️', tabLabel:'Retos' },
+    sponsor:   { label:'Sponsor',    icon:'💰', class:'tipo-sponsor',    tabIcon:'💰', tabLabel:'Apuestas' },
+    inversor:  { label:'Inversor',   icon:'📈', class:'tipo-inversor',   tabIcon:'📈', tabLabel:'Portafolio' },
+    espectador:{ label:'Espectador', icon:'👁️', class:'tipo-espectador', tabIcon:'👁️', tabLabel:'En vivo' },
+  };
+
+  const MEDIA_EMOJIS = ['⚽','🎯','🏆','🔫','💻','🎮','⚡','🌟','🔥','🎬'];
+  const MEDIA_GRADS  = [
+    'linear-gradient(135deg,#1a1a2e,#16213e)',
+    'linear-gradient(135deg,#0d1b2a,#1b263b)',
+    'linear-gradient(135deg,#1a0a00,#2d1b00)',
+    'linear-gradient(135deg,#000d1a,#001f3f)',
+    'linear-gradient(135deg,#0a001f,#1a0050)',
+    'linear-gradient(135deg,#001a00,#003300)',
+  ];
+
+  /* ─── Carga del perfil ────────────────────────────────── */
   async function loadPerfil() {
-    const params = new URLSearchParams(window.location.search);
+    const params   = new URLSearchParams(window.location.search);
     const username = params.get('u') || Auth.getUser()?.username;
-    const myUser = Auth.getUser();
-    esMiPerfil = username === myUser?.username || !params.get('u');
+    const myUser   = Auth.getUser();
+    esMiPerfil     = !params.get('u') || params.get('u') === myUser?.username;
 
     try {
       perfil = await API.usuarios.getPerfil(username || myUser?.username);
     } catch {
-      perfil = {
-        username: username || 'ProGamer_CO', nombre_display: username || 'ProGamer_CO',
-        bio: 'Top 3 eFootball LATAM 🏆 · Retador profesional en GP',
-        pais: 'CO', nivel: 24, xp: 8400, retos_jugados: 142,
-        retos_ganados: 124, retos_perdidos: 18, winrate: 87.3,
-        racha_actual: 12, racha_maxima: 18, identidad_verificada: true,
-        seguidores: 847, siguiendo: 312,
-        juegos: [{nombre_juego:'eFootball 2025',division:'Div 1',verificado:true},{nombre_juego:'CS2',division:'Faceit 8',verificado:true}],
-        ipo: { ticker:'PRGM', precio_actual:48.5, variacion_24h:8.4, market_cap:48500000 },
-        retos_recientes: [
-          {id:'r1',nombre_juego:'eFootball 2025',modalidad:'1v1',monto_apuesta:500,estado:'resuelto',ganador_id:'u1',j2_username:'ElClasico_MX',finalizado_at: new Date(Date.now()-172800000).toISOString()},
-          {id:'r2',nombre_juego:'CS2',modalidad:'FFA',monto_apuesta:1000,estado:'resuelto',ganador_id:'u1',j1_username:'NightLord_CL',finalizado_at: new Date(Date.now()-345600000).toISOString()},
-          {id:'r3',nombre_juego:'eFootball 2025',modalidad:'Champions',monto_apuesta:500,estado:'resuelto',ganador_id:'other',j2_username:'FootballGod_PE',finalizado_at: new Date(Date.now()-604800000).toISOString()},
-        ],
-        media: [
-          {id:'m1',tipo:'foto',titulo:'Champion 2024',es_destacada:true,vistas:5200,likes:1247},
-          {id:'m2',tipo:'video',duracion_seg:45,vistas:2100,likes:432},
-          {id:'m3',tipo:'foto',vistas:890,likes:287},
-          {id:'m4',tipo:'clip_reto',duracion_seg:83,vistas:5400,likes:891},
-          {id:'m5',tipo:'foto',vistas:340,likes:156},
-          {id:'m6',tipo:'foto',es_destacada:true,vistas:1200,likes:523},
-          {id:'m7',tipo:'video',duracion_seg:130,vistas:3800,likes:712},
-          {id:'m8',tipo:'foto',vistas:660,likes:344},
-        ]
-      };
+      perfil = mockPerfil(username || myUser?.username || 'ProGamer_CO', myUser);
+    }
+
+    try {
+      const mediaRes = await API.usuarios.getMedia(perfil.username);
+      mediaItems = Array.isArray(mediaRes) ? mediaRes : perfil.media || mockMedia();
+    } catch {
+      mediaItems = perfil.media || mockMedia();
     }
 
     renderPerfil();
+    renderMedia();
+    renderStats();
+    renderTabEspecial();
+    renderHighlights();
+    initNavbar();
   }
 
+  /* ─── Render del header ───────────────────────────────── */
   function renderPerfil() {
-    document.title = `GP – ${perfil.nombre_display || perfil.username}`;
-    document.getElementById('banner-bg-name').textContent = (perfil.username || '').toUpperCase();
-    document.getElementById('avatar-initials').textContent = initials(perfil.username);
-    document.getElementById('profile-name').textContent = perfil.nombre_display || perfil.username;
-    document.getElementById('profile-handle').textContent = `@${perfil.username}`;
-    document.getElementById('profile-location').textContent = `📍 ${perfil.pais || 'Global'} · Nivel ${perfil.nivel} · Miembro desde ${new Date(perfil.created_at || Date.now()).getFullYear()}`;
-    document.getElementById('profile-bio').textContent = perfil.bio || '';
+    document.title = `GP – @${perfil.username}`;
 
-    if (perfil.identidad_verificada) document.getElementById('badge-verified').style.display = 'inline-flex';
-    if (perfil.juegos?.[0]?.division) {
-      const b = document.getElementById('badge-division');
-      b.textContent = perfil.juegos[0].division;
-      b.style.display = 'inline-flex';
+    // Avatar
+    const [grad, tc] = avatarGradient(perfil.username);
+    const avatarEl   = document.getElementById('ig-avatar-el');
+    avatarEl.style.background = grad;
+    avatarEl.style.color      = tc;
+
+    if (perfil.avatar_url) {
+      avatarEl.innerHTML = `<img src="${perfil.avatar_url}" alt="${perfil.username}">`;
+    } else {
+      document.getElementById('avatar-initials').textContent = initials(perfil.username);
     }
 
-    document.getElementById('stat-seguidores').textContent = (perfil.seguidores||0).toLocaleString();
-    document.getElementById('stat-siguiendo').textContent  = (perfil.siguiendo||0).toLocaleString();
-    document.getElementById('stat-retos').textContent      = perfil.retos_jugados || 0;
-    document.getElementById('stat-wr').textContent         = `${Number(perfil.winrate||0).toFixed(1)}%`;
+    // Ring para retadores con racha ≥ 5
+    if (perfil.tipo === 'retador' && (perfil.racha_actual || 0) >= 5) {
+      document.getElementById('avatar-ring-outer').style.display = 'block';
+    }
 
-    // Game chips
-    document.getElementById('game-chips').innerHTML = (perfil.juegos||[]).map(j =>
-      `<span class="game-chip${j.verificado?' verified':''}">${j.nombre_juego}${j.division?` · ${j.division}`:''}${j.verificado?' ✓':''}</span>`
-    ).join('');
+    // Si es mi perfil: mostrar overlay de edición y botón nuevo highlight
+    if (esMiPerfil) {
+      document.getElementById('avatar-overlay').style.display = 'flex';
+      document.getElementById('hl-nuevo').style.display = 'flex';
+    }
 
-    // Banner tags
-    document.getElementById('banner-tags').innerHTML = (perfil.juegos||[]).slice(0,3).map(j =>
-      `<span class="banner-tag">${j.nombre_juego}</span>`
-    ).join('') + (perfil.pais ? `<span class="banner-tag">🌍 ${perfil.pais}</span>` : '');
+    // Username
+    document.getElementById('ig-username').textContent = perfil.username;
+
+    // Badge de tipo
+    const tipoCfg = TIPO_CONFIG[perfil.tipo] || TIPO_CONFIG.retador;
+    const tipoBadge = document.getElementById('ig-tipo-badge');
+    tipoBadge.textContent = `${tipoCfg.icon} ${tipoCfg.label}`;
+    tipoBadge.className   = `ig-tipo-badge ${tipoCfg.class}`;
 
     // Botones de acción
-    const actionsEl = document.getElementById('profile-actions');
+    const actionsEl = document.getElementById('ig-action-btns');
     if (esMiPerfil) {
       actionsEl.innerHTML = `
-        <button class="btn-seguir-p" onclick="window.location.href='perfil.html'">✏️ Editar perfil</button>
-        <button class="btn-seguir-p" onclick="doLogout()" style="border-color:rgba(255,61,87,0.3);color:var(--red)">⏻ Salir</button>`;
-      document.getElementById('avatar-upload-btn').style.display = 'flex';
-      document.getElementById('hl-new').style.display = 'flex';
-      document.getElementById('upload-cta').style.display = 'block';
+        <button class="ig-btn ig-btn-secondary" onclick="abrirEditar()">Editar perfil</button>
+        <button class="ig-btn ig-btn-secondary" onclick="window.location.href='config-reto.html'">⚙️ Zona de confort</button>
+      `;
     } else {
       actionsEl.innerHTML = `
-        <button class="btn-reto-p" onclick="window.location.href='feed.html'">⚔️ Enviar Reto</button>
-        <button class="btn-seguir-p" id="btn-seguir" onclick="toggleSeguir()">+ Seguir</button>
-        <button class="btn btn-ghost btn-sm">💬</button>`;
+        <button class="ig-btn ig-btn-primary" onclick="retarUsuario()">⚔️ Retar</button>
+        <button class="ig-btn ig-btn-seguir" id="btn-seguir-main" onclick="toggleSeguir(this)">Seguir</button>
+        <button class="ig-btn-icon" onclick="abrirMensaje()" title="Mensaje">💬</button>
+        <button class="ig-btn-icon" id="btn-mas" onclick="toggleMenu(this)" title="Más opciones">⋯</button>
+      `;
+    }
+
+    // Stats
+    document.getElementById('ig-stat-retos').textContent     = (perfil.retos_jugados  || 0).toLocaleString();
+    document.getElementById('ig-stat-seguidores').textContent= (perfil.seguidores || 0).toLocaleString();
+    document.getElementById('ig-stat-siguiendo').textContent = (perfil.siguiendo  || 0).toLocaleString();
+
+    // Nombre y bio
+    document.getElementById('ig-nombre-display').textContent = perfil.nombre_display || perfil.username;
+    document.getElementById('ig-bio').textContent            = perfil.bio || '';
+
+    // Juegos verificados
+    const linksEl = document.getElementById('ig-links');
+    if (perfil.juegos?.length) {
+      linksEl.innerHTML = perfil.juegos.map(j =>
+        `<span class="ig-link-chip${j.verificado ? ' verified' : ''}">
+          ${j.nombre_juego}${j.division ? ' · ' + j.division : ''}${j.verificado ? ' ✓' : ''}
+        </span>`
+      ).join('');
     }
 
     // IPO
     if (perfil.ipo) {
-      document.getElementById('ipo-banner').style.display = 'flex';
-      document.getElementById('ipo-ticker').textContent  = `$${perfil.ipo.ticker}`;
-      document.getElementById('ipo-precio').textContent  = Number(perfil.ipo.precio_actual).toFixed(2);
-      document.getElementById('ipo-mcap').textContent    = `${(perfil.ipo.market_cap/1000000).toFixed(1)}M GPC`;
+      document.getElementById('ig-ipo-bar').style.display = 'flex';
+      document.getElementById('ipo-ticker').textContent   = `$${perfil.ipo.ticker}`;
+      document.getElementById('ipo-precio').textContent   = `${Number(perfil.ipo.precio_actual).toFixed(2)} GPC`;
       const chg = perfil.ipo.variacion_24h || 0;
       const chgEl = document.getElementById('ipo-change');
-      chgEl.textContent = `${chg>=0?'↑':'↓'} ${chg>=0?'+':''}${chg.toFixed(1)}% hoy`;
+      chgEl.textContent = `${chg >= 0 ? '↑ +' : '↓ '}${chg.toFixed(1)}% hoy`;
       chgEl.style.color = chg >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('ipo-mcap').textContent = `${(perfil.ipo.market_cap / 1000000).toFixed(1)}M GPC`;
       buildSparkline();
     }
 
-    // Stats
-    document.getElementById('sc-wr').textContent        = `${Number(perfil.winrate||0).toFixed(1)}%`;
-    document.getElementById('sc-wr-bar').style.width    = `${Math.min(perfil.winrate||0,100)}%`;
-    document.getElementById('sc-wr-sub').textContent    = `${perfil.retos_ganados||0}W · ${perfil.retos_perdidos||0}L`;
-    document.getElementById('sc-racha').textContent     = `×${perfil.racha_actual||0}`;
-    document.getElementById('sc-racha-max').textContent = `Máxima: ×${perfil.racha_maxima||0}`;
-    document.getElementById('sc-nivel').textContent     = `Nv. ${perfil.nivel||1}`;
-    document.getElementById('sc-xp-bar').style.width   = `${(perfil.xp||0) % 10000 / 100}%`;
-    document.getElementById('sc-xp-sub').textContent   = `${(perfil.xp||0).toLocaleString()} XP`;
-
-    renderMedia(perfil.media || []);
-    renderRetosHist(perfil.retos_recientes || []);
-    renderSugeridos();
-    document.getElementById('media-count').textContent  = (perfil.media||[]).length;
-    document.getElementById('retos-count').textContent  = perfil.retos_jugados || 0;
-
-    // Gamery analysis
-    document.getElementById('gamery-analysis').innerHTML = `"<strong style="color:var(--t1)">${perfil.username}</strong> tiene un winrate de <strong style="color:var(--gold)">${Number(perfil.winrate||0).toFixed(1)}%</strong> y una racha de ×${perfil.racha_actual||0} victorias. ${perfil.ipo?`Su acción $${perfil.ipo.ticker} cotiza a ${perfil.ipo.precio_actual} GPC.`:'Cerca del IPO.'}"`;
+    // Tab especial según tipo
+    const tabEsp = document.getElementById('tab-btn-especial');
+    tabEsp.textContent = `${tipoCfg.tabIcon} ${tipoCfg.tabLabel}`;
   }
 
-  function renderMedia(items) {
-    const grid = document.getElementById('media-grid');
-    let html = items.map((m, i) => {
-      const isFeat = m.es_destacada && i === 0;
-      const grad   = GRADIENTS[i % GRADIENTS.length];
-      const emoji  = EMOJIS_MEDIA[i % EMOJIS_MEDIA.length];
+  /* ─── Grid de posts ────────────────────────────────────── */
+  function renderMedia() {
+    const grid = document.getElementById('ig-grid');
+
+    let html = mediaItems.map((m, i) => {
+      const isFeatured = i === 0 && m.es_destacada;
+      const grad       = MEDIA_GRADS[i % MEDIA_GRADS.length];
+      const emoji      = MEDIA_EMOJIS[i % MEDIA_EMOJIS.length];
+
       return `
-        <div class="media-cell${isFeat?' media-featured':''}" onclick="viewMedia('${m.id}')">
-          ${m.es_destacada && i===0 ? '<div class="feat-dot"></div>' : ''}
-          <div class="media-img" style="background:${grad}">${emoji}${isFeat&&m.titulo?`<div style="font-family:var(--display);font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">${m.titulo}</div>`:''}
+        <div class="ig-post${isFeatured ? ' ig-post-featured' : ''}" onclick="abrirViewer(${i})">
+          <div class="ig-post-img" style="background:${grad}">
+            ${emoji}
+            ${isFeatured && m.titulo ? `<div style="font-family:var(--display);font-size:12px;color:rgba(255,255,255,0.5);position:absolute;bottom:10px;left:12px;letter-spacing:0.04em">${m.titulo}</div>` : ''}
           </div>
-          ${m.tipo==='video'||m.tipo==='clip_reto'?`<div class="video-badge">▶ ${m.duracion_seg?Math.floor(m.duracion_seg/60)+':'+(m.duracion_seg%60).toString().padStart(2,'0'):'0:45'}</div>`:''}
-          ${m.tipo==='clip_reto'?'<div class="clip-badge">RETO</div>':''}
-          <div class="media-overlay"><div class="media-stats"><span>❤️ ${(m.likes||0).toLocaleString()}</span><span>👁️ ${(m.vistas||0).toLocaleString()}</span></div></div>
+          ${isFeatured ? '<div class="ig-post-badge ig-post-badge-feat"></div>' : ''}
+          ${(m.tipo === 'video' || m.tipo === 'clip_reto') && m.duracion_seg
+            ? `<div class="ig-post-badge ig-post-badge-video">▶ ${Math.floor(m.duracion_seg/60)}:${String(m.duracion_seg%60).padStart(2,'0')}</div>`
+            : ''}
+          ${m.tipo === 'clip_reto'
+            ? '<div class="ig-post-badge ig-post-badge-reto">RETO</div>'
+            : ''}
+          <div class="ig-post-overlay">
+            <div class="ig-post-stat">❤️ <span>${(m.likes || 0).toLocaleString()}</span></div>
+            <div class="ig-post-stat">👁️ <span>${(m.vistas || 0).toLocaleString()}</span></div>
+          </div>
         </div>`;
     }).join('');
 
+    // Celda de upload (solo mi perfil)
     if (esMiPerfil) {
-      html += `<div class="media-upload" onclick="document.getElementById('media-file').click()"><div style="font-size:22px;opacity:0.4">📤</div><div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:0.1em;text-align:center">Subir foto<br>o video</div></div>`;
+      html += `
+        <div class="ig-post-upload" onclick="document.getElementById('media-file-input').click()">
+          <div style="font-size:28px;opacity:0.4">📤</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:0.08em;text-align:center">Subir foto<br>o video</div>
+        </div>`;
     }
+
+    if (!mediaItems.length && !esMiPerfil) {
+      html = `<div style="grid-column:1/-1;padding:80px 20px;text-align:center;color:var(--t3)">
+        <div style="font-size:48px;margin-bottom:12px">📷</div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Sin posts aún</div>
+        <div style="font-size:13px">Cuando suba fotos y videos aparecerán aquí</div>
+      </div>`;
+    }
+
     grid.innerHTML = html;
   }
 
-  function renderRetosHist(retos) {
-    const el = document.getElementById('tab-retos');
-    el.innerHTML = retos.map(r => {
-      const gano  = r.ganador_id === perfil.id || r.ganador_id === 'u1';
-      const opp   = r.j2_username || r.j1_username || 'Oponente';
-      const monto = r.monto_apuesta || 500;
-      return `
-        <div class="reto-row" onclick="window.location.href='reto-detalle.html?id=${r.id}'">
-          <div class="reto-result ${gano?'res-w':'res-l'}">${gano?'W':'L'}</div>
-          <div style="flex:1">
-            <div style="font-family:var(--ui);font-size:13px;font-weight:600">vs ${opp}</div>
-            <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px">${r.nombre_juego} · ${r.modalidad||'1v1'} · ${timeAgo(r.finalizado_at||r.created_at)}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-family:var(--display);font-size:14px;font-weight:700;color:${gano?'var(--green)':'var(--red)'}">${gano?'+':'-'}${GPC.format(Math.round(monto*0.95))}</div>
-            <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${GPC.toUSD(Math.round(monto*0.95))}</div>
-          </div>
-        </div>`;
-    }).join('') || '<div style="padding:20px;text-align:center;color:var(--t3);font-family:var(--mono);font-size:11px">Sin retos aún</div>';
-  }
+  /* ─── Stats ─────────────────────────────────────────────── */
+  function renderStats() {
+    const statsData = [
+      { label:'Winrate global',   val:`${Number(perfil.winrate || 0).toFixed(1)}%`, color:'var(--green)',  sub:`${perfil.retos_ganados || 0}W · ${perfil.retos_perdidos || 0}L`, bar: perfil.winrate },
+      { label:'Ganancias totales', val:GPC.format(42800),  color:'var(--green)',  sub:'GPC acumulados' },
+      { label:'Racha actual',     val:`×${perfil.racha_actual || 0}`, color:'var(--cyan)', sub:`Máxima: ×${perfil.racha_maxima || 0}` },
+      { label:'Ranking LATAM',    val:'#3',               color:'var(--gold)',   sub:'Top 0.1%' },
+      { label:'Mayor apuesta',    val:GPC.format(5000),   color:'var(--gold)',   sub:'≈ $500 USD · Ganada ✓' },
+      { label:`Nivel / XP`,       val:`Nv. ${perfil.nivel || 1}`, color:'var(--t1)', sub:`${(perfil.xp || 0).toLocaleString()} XP`, bar: (perfil.xp || 0) % 10000 / 100 },
+    ];
 
-  function renderSugeridos() {
-    document.getElementById('sugeridos').innerHTML = SUGERIDOS.map(s => `
-      <div class="sug-item">
-        <div style="width:34px;height:34px;border-radius:50%;background:${s.color};color:${s.tc};display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:12px;font-weight:800;flex-shrink:0">${s.av}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-family:var(--ui);font-size:12px;font-weight:600">${s.name}</div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${s.sub}</div>
-        </div>
-        <button class="sug-btn" onclick="toggleSug(this,'${s.name}')">Seguir</button>
+    document.getElementById('stats-grid-content').innerHTML = statsData.map(s => `
+      <div class="stat-card-ig">
+        <div class="sc-label">${s.label}</div>
+        <div class="sc-val" style="color:${s.color}">${s.val}</div>
+        ${s.bar !== undefined ? `<div class="sc-bar"><div class="sc-fill" style="width:${Math.min(s.bar, 100)}%"></div></div>` : ''}
+        <div class="sc-sub">${s.sub}</div>
       </div>`).join('');
   }
 
+  /* ─── Tab especial según tipo ──────────────────────────── */
+  function renderTabEspecial() {
+    const tipo = perfil.tipo || 'retador';
+    const el   = document.getElementById('tab-especial-content');
+
+    if (tipo === 'retador') {
+      const retos = perfil.retos_recientes || mockRetos();
+      el.innerHTML = retos.map(r => {
+        const gano  = r.ganador_id === perfil.id || r.resultado === 'ganado';
+        const opp   = r.j2_username || r.j1_username || 'Oponente';
+        const monto = r.monto_apuesta || 500;
+        return `
+          <div class="reto-row-ig" onclick="window.location.href='reto-detalle.html?id=${r.id}'">
+            <div class="rr-result ${gano ? 'rr-w' : r.resultado === 'pendiente' ? 'rr-p' : 'rr-l'}">${gano ? 'W' : r.resultado === 'pendiente' ? '~' : 'L'}</div>
+            <div style="flex:1">
+              <div style="font-family:var(--ui);font-size:14px;font-weight:600">vs ${opp}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:2px">${r.nombre_juego} · ${r.modalidad || '1v1'} · ${timeAgo(r.finalizado_at || r.created_at)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:var(--display);font-size:15px;font-weight:700;color:${gano ? 'var(--green)' : 'var(--red)'}">${gano ? '+' : '-'}${GPC.format(Math.round(monto * 0.95))}</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${GPC.toUSD(Math.round(monto * 0.95))}</div>
+            </div>
+          </div>`;
+      }).join('') || '<div style="padding:40px;text-align:center;color:var(--t3)">Sin retos aún</div>';
+
+    } else if (tipo === 'sponsor') {
+      el.innerHTML = `
+        <div style="padding:20px 0">
+          ${mockApuestas().map(a => `
+            <div class="apuesta-row">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--elevated);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${a.gano ? '✅' : '❌'}</div>
+              <div style="flex:1">
+                <div style="font-family:var(--ui);font-size:13px;font-weight:600">Aposté a ${a.jugador}</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${a.juego} · odds ${a.odds}x · ${a.hace}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-family:var(--display);font-size:14px;font-weight:700;color:${a.gano ? 'var(--green)' : 'var(--red)'}">${a.gano ? '+' : '-'}${GPC.format(a.ganancia)}</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+
+    } else if (tipo === 'inversor') {
+      el.innerHTML = `
+        <div style="padding:20px 0">
+          ${mockPortafolio().map(p => `
+            <div class="port-row">
+              <div style="width:36px;height:36px;border-radius:50%;background:${p.color};color:${p.tc};display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:13px;font-weight:800;flex-shrink:0">${p.av}</div>
+              <div style="flex:1">
+                <div style="font-family:var(--ui);font-size:13px;font-weight:600">${p.username}</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${p.cantidad.toLocaleString()} acc · $${p.ticker}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-family:var(--mono);font-size:12px;color:var(--gold)">${GPC.format(p.valor)}</div>
+                <div style="font-family:var(--mono);font-size:10px;color:${p.pl >= 0 ? 'var(--green)' : 'var(--red)'}">${p.pl >= 0 ? '+' : ''}${GPC.format(Math.abs(p.pl))}</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+
+    } else if (tipo === 'espectador') {
+      el.innerHTML = `
+        <div style="padding:40px;text-align:center">
+          <div style="font-size:48px;margin-bottom:12px">👁️</div>
+          <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:8px">Retos vistos: 47</div>
+          <div style="color:var(--t2);margin-bottom:20px">Has ganado 3 rifas · 850 GPC en premios</div>
+          <a href="feed.html" class="btn btn-primary">Ver retos en vivo →</a>
+        </div>`;
+    }
+  }
+
+  /* ─── Highlights ───────────────────────────────────────── */
+  function renderHighlights() {
+    const HLS = [
+      { emoji:'🏆', label:'Top Retos' },
+      { emoji:'⚽', label:'eFootball' },
+      { emoji:'🔫', label:'CS2' },
+      { emoji:'🎬', label:'Clips' },
+      { emoji:'💪', label:'Setup' },
+    ];
+
+    const container = document.getElementById('ig-highlights');
+    HLS.forEach(h => {
+      const div = document.createElement('div');
+      div.className = 'ig-hl';
+      div.innerHTML = `
+        <div class="ig-hl-ring"><div class="ig-hl-inner">${h.emoji}</div></div>
+        <div class="ig-hl-label">${h.label}</div>`;
+      container.appendChild(div);
+    });
+  }
+
+  /* ─── Sparkline IPO ────────────────────────────────────── */
   function buildSparkline() {
     const heights = [20,28,22,35,30,42,38,45,40,50,44,52,48,60,55,65,58,70,64,75];
-    document.getElementById('sparkline').innerHTML = heights.map(h =>
-      `<div class="spark-bar" style="height:${h}%"></div>`
+    document.getElementById('ipo-sparkline').innerHTML = heights.map(h =>
+      `<div style="background:var(--gold);border-radius:2px 2px 0 0;flex:1;height:${h}%;min-width:3px"></div>`
     ).join('');
   }
 
+  /* ─── Tabs ─────────────────────────────────────────────── */
   function showTab(tab, btn) {
-    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    ['posts','stats','especial','tagged'].forEach(t => {
+      document.getElementById(`tab-${t}`).style.display = 'none';
+    });
+    document.querySelectorAll('.ig-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).style.display = 'block';
     btn.classList.add('active');
-    document.getElementById('tab-media').style.display  = tab==='media'  ? 'block':'none';
-    document.getElementById('tab-stats').style.display  = tab==='stats'  ? 'grid' :'none';
-    document.getElementById('tab-retos').style.display  = tab==='retos'  ? 'block':'none';
   }
 
-  function toggleSeguir() {
-    const btn = document.getElementById('btn-seguir');
-    if (!btn) return;
-    const activo = btn.classList.toggle('active');
-    btn.textContent = activo ? '✓ Siguiendo' : '+ Seguir';
+  /* ═══════════════════════════════════════════════════════
+     POPUP DE EDICIÓN
+  ═══════════════════════════════════════════════════════ */
+  function abrirEditar() {
+    if (!esMiPerfil) return;
+
+    // Rellenar campos con los datos actuales
+    document.getElementById('edit-username').value = perfil.username || '';
+    document.getElementById('edit-nombre').value   = perfil.nombre_display || '';
+    document.getElementById('edit-bio').value       = perfil.bio || '';
+
+    // Contar chars iniciales
+    countChars(document.getElementById('edit-nombre'), 'nombre-count', 50);
+    countChars(document.getElementById('edit-bio'),    'bio-count',    200);
+
+    // Preview del avatar
+    _syncEditAvatar();
+
+    // Tipo de usuario
+    tipoEditando = perfil.tipo || 'retador';
+    document.querySelectorAll('.tipo-option').forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.tipo === tipoEditando);
+    });
+
+    // Limpiar status de username
+    document.getElementById('username-status').innerHTML = '';
+    document.getElementById('edit-username').className   = 'edit-input edit-input-with-prefix';
+
+    // Mostrar overlay
+    document.getElementById('edit-overlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Focus en nombre
+    setTimeout(() => document.getElementById('edit-username').focus(), 300);
   }
 
-  function toggleSug(btn, name) {
-    const activo = btn.textContent === '✓';
-    btn.textContent = activo ? 'Seguir' : '✓';
+  function cerrarEditar() {
+    document.getElementById('edit-overlay').style.display = 'none';
+    document.body.style.overflow = '';
   }
 
-  function viewMedia(id) {
-    toast('Vista de media próximamente', 'info');
+  /* Sincronizar preview del avatar en el modal */
+  function _syncEditAvatar() {
+    const previewEl = document.getElementById('edit-avatar-preview');
+    const [grad, tc] = avatarGradient(perfil.username);
+
+    if (perfil.avatar_url) {
+      previewEl.innerHTML = `<img src="${perfil.avatar_url}" alt="${perfil.username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      previewEl.style.background = grad;
+      previewEl.style.color      = tc;
+      document.getElementById('edit-avatar-initials').textContent = initials(perfil.username);
+    }
   }
 
-  async function uploadAvatar(input) {
+  /* Verificar disponibilidad del username con debounce */
+  function checkUsername(val) {
+    const statusEl = document.getElementById('username-status');
+    const inputEl  = document.getElementById('edit-username');
+
+    // Limpiar timer anterior
+    clearTimeout(usernameTimer);
+
+    const cleaned = val.replace(/[^a-zA-Z0-9_]/g, '');
+    if (cleaned !== val) { inputEl.value = cleaned; }
+
+    if (!cleaned) {
+      statusEl.innerHTML = '';
+      inputEl.className  = 'edit-input edit-input-with-prefix';
+      return;
+    }
+
+    if (cleaned.length < 3) {
+      statusEl.innerHTML = '<span style="color:var(--red)">✕ Mínimo 3 caracteres</span>';
+      inputEl.className  = 'edit-input edit-input-with-prefix error';
+      usernameDisponible = false;
+      return;
+    }
+
+    if (cleaned === perfil.username) {
+      statusEl.innerHTML = '';
+      inputEl.className  = 'edit-input edit-input-with-prefix ok';
+      usernameDisponible = true;
+      return;
+    }
+
+    statusEl.innerHTML = '<span class="username-status checking">⏳ Verificando...</span>';
+
+    usernameTimer = setTimeout(async () => {
+      try {
+        await API.usuarios.getPerfil(cleaned);
+        // Si no lanza error, el username existe
+        statusEl.innerHTML = '<span class="username-status taken">✕ Username no disponible</span>';
+        inputEl.className  = 'edit-input edit-input-with-prefix error';
+        usernameDisponible = false;
+      } catch {
+        // Lanza error 404 = disponible
+        statusEl.innerHTML = '<span class="username-status available">✓ Disponible</span>';
+        inputEl.className  = 'edit-input edit-input-with-prefix ok';
+        usernameDisponible = true;
+      }
+    }, 600);
+  }
+
+  /* Contador de caracteres */
+  function countChars(el, countId, max) {
+    const len = el.value.length;
+    const countEl = document.getElementById(countId);
+    countEl.textContent = `${len} / ${max}`;
+    countEl.className   = len > max * 0.9 ? (len >= max ? 'char-count over' : 'char-count warn') : 'char-count';
+  }
+
+  /* Seleccionar tipo de usuario */
+  function selectTipo(tipo, el) {
+    tipoEditando = tipo;
+    document.querySelectorAll('.tipo-option').forEach(opt => opt.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  /* Quitar avatar */
+  function quitarAvatar() {
+    perfil.avatar_url = null;
+    _syncEditAvatar();
+    toast('Foto eliminada. Guarda los cambios para confirmar.', 'info');
+  }
+
+  /* Subir avatar desde el input del modal */
+  async function subirAvatarDesdeInput(input) {
     const file = input.files[0];
     if (!file) return;
+
+    // Validar tamaño
+    if (file.size > 5 * 1024 * 1024) {
+      toast('La imagen no puede pesar más de 5MB', 'error');
+      return;
+    }
+
+    // Preview inmediato
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const previewEl = document.getElementById('edit-avatar-preview');
+      previewEl.innerHTML = `<img src="${e.target.result}" alt="preview" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    };
+    reader.readAsDataURL(file);
+
     try {
       const res = await API.usuarios.subirAvatar(file);
-      toast('Avatar actualizado ✓', 'success');
-    } catch { toast('Error subiendo avatar', 'error'); }
+      perfil.avatar_url = res.avatar_url;
+      // Actualizar también el avatar principal en la página
+      const avatarEl = document.getElementById('ig-avatar-el');
+      avatarEl.innerHTML = `<img src="${res.avatar_url}" alt="${perfil.username}">`;
+      toast('✅ Foto actualizada', 'success');
+    } catch (e) {
+      toast(e.message || 'Error subiendo la foto', 'error');
+    }
   }
 
-  async function uploadMedia(input) {
+  /* Guardar cambios del perfil */
+  async function guardarPerfil() {
+    const username     = document.getElementById('edit-username').value.trim();
+    const nombre       = document.getElementById('edit-nombre').value.trim();
+    const bio          = document.getElementById('edit-bio').value.trim();
+
+    // Validaciones
+    if (!username) { toast('El username es obligatorio', 'error'); return; }
+    if (username.length < 3) { toast('Username demasiado corto (mínimo 3)', 'error'); return; }
+    if (!usernameDisponible && username !== perfil.username) {
+      toast('Ese username no está disponible', 'error'); return;
+    }
+    if (bio.length > 200) { toast('La bio es demasiado larga (máximo 200)', 'error'); return; }
+
+    const btn = document.getElementById('edit-save-btn');
+    btn.textContent = 'Guardando...';
+    btn.disabled    = true;
+
+    try {
+      const updated = await API.usuarios.actualizarPerfil({
+        username,
+        nombre_display: nombre || username,
+        bio,
+        tipo: tipoEditando,
+      });
+
+      // Actualizar estado local
+      perfil = { ...perfil, ...updated };
+      Auth.setUser({ ...Auth.getUser(), username: perfil.username });
+
+      // Re-renderizar el perfil con los nuevos datos
+      renderPerfil();
+      renderTabEspecial();
+
+      cerrarEditar();
+      toast('✅ Perfil actualizado correctamente', 'success');
+
+    } catch (e) {
+      // Demo sin backend: actualizar solo en memoria
+      perfil.username      = username;
+      perfil.nombre_display= nombre || username;
+      perfil.bio           = bio;
+      perfil.tipo          = tipoEditando;
+      Auth.setUser({ ...Auth.getUser(), username });
+
+      renderPerfil();
+      renderTabEspecial();
+      cerrarEditar();
+      toast('✅ Perfil actualizado (demo)', 'success');
+    }
+
+    btn.textContent = 'Guardar cambios';
+    btn.disabled    = false;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     VIEWER DE POST
+  ═══════════════════════════════════════════════════════ */
+  function abrirViewer(idx) {
+    const m = mediaItems[idx];
+    if (!m) return;
+    postActivo = { m, idx };
+
+    const grad  = MEDIA_GRADS[idx % MEDIA_GRADS.length];
+    const emoji = MEDIA_EMOJIS[idx % MEDIA_EMOJIS.length];
+
+    document.getElementById('pv-img').style.background = grad;
+    document.getElementById('pv-img').innerHTML =
+      `<div style="font-size:80px">${emoji}</div>`;
+
+    const [grad2, tc] = avatarGradient(perfil.username);
+    document.getElementById('pv-av').style.background = grad2;
+    document.getElementById('pv-av').style.color      = tc;
+    document.getElementById('pv-av').textContent      = initials(perfil.username);
+    document.getElementById('pv-username').textContent= perfil.username;
+    document.getElementById('pv-fecha').textContent   = timeAgo(m.created_at || new Date().toISOString());
+    document.getElementById('pv-desc').textContent    = m.descripcion || m.titulo || 'Sin descripción';
+    document.getElementById('pv-likes').textContent   = (m.likes || 0).toLocaleString();
+    document.getElementById('pv-vistas').textContent  = `${(m.vistas || 0).toLocaleString()} vistas`;
+    document.getElementById('pv-like-btn').textContent= '🤍';
+
+    // Tags
+    const tags = [];
+    if (m.juego)          tags.push(`🎮 ${m.juego}`);
+    if (m.tipo === 'clip_reto') tags.push('⚔️ Clip de reto');
+    if (m.tipo === 'video')     tags.push('🎬 Video');
+    document.getElementById('pv-tags').innerHTML = tags.map(t =>
+      `<span class="badge badge-muted">${t}</span>`
+    ).join('');
+
+    // Botón eliminar solo si es mi perfil
+    document.getElementById('pv-delete-btn').style.display = esMiPerfil ? 'block' : 'none';
+
+    document.getElementById('post-viewer').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function cerrarViewer() {
+    document.getElementById('post-viewer').style.display = 'none';
+    document.body.style.overflow = '';
+    postActivo = null;
+  }
+
+  async function toggleLikeViewer() {
+    if (!postActivo) return;
+    const btn = document.getElementById('pv-like-btn');
+    const isLiked = btn.textContent === '❤️';
+    btn.textContent = isLiked ? '🤍' : '❤️';
+    const likes = parseInt(document.getElementById('pv-likes').textContent.replace(/,/g, ''));
+    document.getElementById('pv-likes').textContent = (isLiked ? likes - 1 : likes + 1).toLocaleString();
+    try {
+      if (!isLiked) await API.usuarios.darLike(postActivo.m.id);
+    } catch {}
+  }
+
+  async function eliminarPostActivo() {
+    if (!postActivo || !esMiPerfil) return;
+    if (!confirm('¿Eliminar este post?')) return;
+    try {
+      await API.usuarios.eliminarMedia(postActivo.m.id);
+      mediaItems.splice(postActivo.idx, 1);
+      renderMedia();
+      cerrarViewer();
+      toast('Post eliminado', 'info');
+    } catch {
+      mediaItems.splice(postActivo.idx, 1);
+      renderMedia();
+      cerrarViewer();
+      toast('Post eliminado (demo)', 'info');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SUBIR MEDIA
+  ═══════════════════════════════════════════════════════ */
+  async function subirMedia(input) {
     const file = input.files[0];
     if (!file) return;
+
+    const tipo = file.type.startsWith('video') ? 'video' : 'foto';
+    const emoji = tipo === 'video' ? '🎬' : '📷';
+
+    toast(`${emoji} Subiendo ${tipo}...`, 'info');
+
     try {
-      await API.usuarios.subirMedia(file, { es_publica: true });
-      toast('Subido al perfil ✓', 'success');
-      await loadPerfil();
-    } catch { toast('Error subiendo archivo', 'error'); }
+      const nueva = await API.usuarios.subirMedia(file, {
+        tipo,
+        es_publica: true,
+        es_destacada: false,
+      });
+      mediaItems.unshift(nueva);
+      renderMedia();
+      toast(`✅ ${tipo === 'video' ? 'Video' : 'Foto'} subida al perfil`, 'success');
+    } catch (e) {
+      // Demo: agregar mock
+      mediaItems.unshift({
+        id: 'new_' + Date.now(),
+        tipo,
+        titulo: `Nuevo ${tipo}`,
+        descripcion: '',
+        likes: 0,
+        vistas: 0,
+        es_destacada: false,
+        created_at: new Date().toISOString(),
+      });
+      renderMedia();
+      toast(`✅ ${tipo === 'video' ? 'Video' : 'Foto'} subida (demo)`, 'success');
+    }
+
+    input.value = '';
   }
 
+  /* ═══════════════════════════════════════════════════════
+     ACCIONES SOCIALES
+  ═══════════════════════════════════════════════════════ */
+  async function toggleSeguir(btn) {
+    const siguiendo = btn.classList.toggle('siguiendo');
+    btn.textContent = siguiendo ? '✓ Siguiendo' : 'Seguir';
+    try {
+      if (siguiendo) await API.usuarios.seguir(perfil.username);
+      else           await API.usuarios.dejarDeSeguir(perfil.username);
+    } catch {}
+  }
+
+  function retarUsuario() {
+    window.location.href = `confirmacion.html?oponente=${perfil.username}`;
+  }
+
+  function abrirMensaje() {
+    toast('💬 Mensajes próximamente', 'info');
+  }
+
+  function mostrarSeguidores(tipo) {
+    toast(`Lista de ${tipo} próximamente`, 'info');
+  }
+
+  function toggleMenu(btn) {
+    toast('⋯ Opciones próximamente', 'info');
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MOCK DATA (demo sin backend)
+  ═══════════════════════════════════════════════════════ */
+  function mockPerfil(username, myUser) {
+    return {
+      id: 'u1', username, nombre_display: username,
+      bio: 'Top 3 eFootball LATAM 🏆 · CS2 Faceit Level 8 · Retador profesional en GP\n"El skill no miente, los números tampoco"',
+      pais: 'CO', nivel: 24, xp: 8400, tipo: myUser?.tipo || 'retador',
+      retos_jugados: 142, retos_ganados: 124, retos_perdidos: 18,
+      winrate: 87.3, racha_actual: 12, racha_maxima: 18,
+      seguidores: 847, siguiendo: 312,
+      identidad_verificada: true,
+      created_at: '2024-01-15T00:00:00Z',
+      juegos: [
+        { nombre_juego:'eFootball 2025', division:'Div 1', verificado:true },
+        { nombre_juego:'CS2',            division:'Faceit 8', verificado:true },
+      ],
+      ipo: { ticker:'PRGM', precio_actual:48.5, variacion_24h:8.4, market_cap:48500000 },
+      retos_recientes: mockRetos(),
+    };
+  }
+
+  function mockMedia() {
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: `m${i}`, tipo: i % 3 === 0 ? 'video' : i % 4 === 0 ? 'clip_reto' : 'foto',
+      titulo: i === 0 ? 'Champion 2024' : null,
+      descripcion: i === 0 ? 'Mi mejor racha del año 🏆' : null,
+      es_destacada: i === 0,
+      duracion_seg: i % 3 === 0 ? 45 + i * 10 : null,
+      vistas: Math.floor(Math.random() * 5000) + 100,
+      likes: Math.floor(Math.random() * 800) + 50,
+      created_at: new Date(Date.now() - i * 86400000 * 2).toISOString(),
+    }));
+  }
+
+  function mockRetos() {
+    return [
+      { id:'r1', nombre_juego:'eFootball 2025', modalidad:'1v1', monto_apuesta:500, resultado:'ganado', ganador_id:'u1', j2_username:'ElClasico_MX', finalizado_at: new Date(Date.now()-172800000).toISOString() },
+      { id:'r2', nombre_juego:'CS2', modalidad:'FFA', monto_apuesta:1000, resultado:'ganado', ganador_id:'u1', j1_username:'NightLord_CL', finalizado_at: new Date(Date.now()-345600000).toISOString() },
+      { id:'r3', nombre_juego:'eFootball 2025', modalidad:'Champions', monto_apuesta:500, resultado:'perdido', ganador_id:'other', j2_username:'FootballGod_PE', finalizado_at: new Date(Date.now()-604800000).toISOString() },
+    ];
+  }
+
+  function mockApuestas() {
+    return [
+      { jugador:'ProGamer_CO', juego:'eFootball', odds:1.85, ganancia:475, gano:true, hace:'hace 2d' },
+      { jugador:'SnipeMaster', juego:'CS2',       odds:2.10, ganancia:300, gano:false,hace:'hace 5d' },
+      { jugador:'FootballGod', juego:'eFootball', odds:1.55, ganancia:550, gano:true, hace:'hace 1sem' },
+    ];
+  }
+
+  function mockPortafolio() {
+    return [
+      { username:'ProGamer_CO',    av:'PG', color:'linear-gradient(135deg,#f0b429,#c4911a)', tc:'#000', ticker:'PRGM', cantidad:100, valor:4850, pl:630 },
+      { username:'FootballGod_PE', av:'FG', color:'linear-gradient(135deg,#b388ff,#7c4dff)', tc:'#fff', ticker:'FTGD', cantidad:50,  valor:4455, pl:1455 },
+    ];
+  }
+
+  /* ── Init ── */
   loadPerfil();
-  initNavbar();
 </script>
 </body>
 </html>

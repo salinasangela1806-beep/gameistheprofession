@@ -61,17 +61,31 @@ const API = {
 
   // USUARIOS
   usuarios: {
-    getPerfil:      (username) => req(`/usuarios/${username}`),
-    subirAvatar:    (file)     => { const f = new FormData(); f.append('archivo', file); return upload('/usuarios/me/avatar', f); },
-    subirMedia:     (file, meta) => {
+    getPerfil:       (username) => req(`/usuarios/${username}`),
+
+    // Editar perfil (nombre, bio, username, pais, tipo, etc.)
+    actualizarPerfil:(data)     => req('/auth/me', { method: 'PATCH', body: JSON.stringify(data) }),
+
+    // Avatar
+    subirAvatar:     (file)     => { const f = new FormData(); f.append('archivo', file); return upload('/usuarios/me/avatar', f); },
+
+    // Media (fotos y videos del perfil)
+    subirMedia:      (file, meta) => {
       const f = new FormData();
       f.append('archivo', file);
       Object.entries(meta).forEach(([k,v]) => f.append(k, v));
       return upload('/usuarios/me/media', f);
     },
-    seguir:         (username) => req(`/usuarios/${username}/seguir`, { method: 'POST' }),
-    dejarDeSeguir:  (username) => req(`/usuarios/${username}/seguir`, { method: 'DELETE' }),
-    leaderboard:    (pais)     => req(`/usuarios/leaderboard/global${pais ? '?pais=' + pais : ''}`),
+    getMedia:        (username, tipo) => req(`/usuarios/${username}/media${tipo ? '?tipo=' + tipo : ''}`),
+    eliminarMedia:   (mediaId)  => req(`/usuarios/me/media/${mediaId}`, { method: 'DELETE' }),
+    darLike:         (mediaId)  => req(`/usuarios/media/${mediaId}/like`, { method: 'POST' }),
+
+    // Social
+    seguir:          (username) => req(`/usuarios/${username}/seguir`, { method: 'POST' }),
+    dejarDeSeguir:   (username) => req(`/usuarios/${username}/seguir`, { method: 'DELETE' }),
+    seguidores:      (username) => req(`/usuarios/${username}/seguidores`),
+    siguiendo:       (username) => req(`/usuarios/${username}/siguiendo`),
+    leaderboard:     (pais)     => req(`/usuarios/leaderboard/global${pais ? '?pais=' + pais : ''}`),
   },
 
   // RETOS
