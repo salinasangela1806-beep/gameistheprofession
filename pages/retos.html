@@ -250,7 +250,7 @@
   requireAuth();
 
   const params = new URLSearchParams(window.location.search);
-  const retoId = params.get('id') || '0';
+  const retoId = params.get('id') || '';
   let reto = null;
   let odds = null;
   let jugadorApuestaSeleccionado = null;
@@ -275,7 +275,17 @@
     volumen_total_gpc: 3200,
   };
 
+  const esUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(retoId);
+
   async function loadReto() {
+    if (!esUUID) {
+      // ID no válido (mock o vacío) → usar datos de demo directamente
+      reto = MOCK_RETO;
+      odds = MOCK_ODDS;
+      renderReto();
+      renderOdds();
+      return;
+    }
     try {
       reto = await API.retos.getReto(retoId);
       odds = await API.sponsors.odds(retoId);
